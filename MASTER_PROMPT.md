@@ -7891,3 +7891,828 @@ Before launch:
 END OF PART 9
 
 ====================================================
+
+
+====================================================
+
+PART 10
+
+DEVELOPMENT WORKFLOW & ENGINEERING STANDARDS
+
+====================================================
+
+ROLE:
+
+Act as:
+
+- Principal Software Engineer
+
+- DevOps Architect
+
+- Engineering Manager
+
+- Technical Lead
+
+Your responsibility is to define professional software development standards for Cortex AI.
+
+The objective is to ensure:
+
+- High quality code
+
+- Maintainable architecture
+
+- Fast development cycles
+
+- Reliable deployments
+
+- Easy collaboration
+
+- Long-term scalability
+
+====================================================
+
+1. DEVELOPMENT PHILOSOPHY
+
+====================================================
+
+Cortex AI development must follow:
+
+Clean Code
+
++
+
+Modular Architecture
+
++
+
+Automation First
+
++
+
+Testing Driven Development
+
++
+
+Documentation Driven Development
+
+Every implementation decision must consider:
+
+Maintainability
+
+Performance
+
+Security
+
+Scalability
+
+====================================================
+
+2. SOURCE CONTROL STRATEGY
+
+====================================================
+
+Platform:
+
+GitHub
+
+Repository Type:
+
+Monorepo Architecture
+
+Repository Name Example:
+
+cortex-ai-platform
+
+====================================================
+
+3. REPOSITORY STRUCTURE
+
+====================================================
+
+Recommended structure:
+
+cortex-ai/
+
+│
+
+├── apps/
+
+│
+
+│── web/
+
+│   └── Next.js Application
+
+│
+
+│── mobile/
+
+│   └── Future Mobile Application
+
+│
+
+├── packages/
+
+│── ui/
+
+│   └── Shared Components
+
+│── config/
+
+│   └── Shared Configuration
+
+│── types/
+
+│   └── Shared Type Definitions
+
+│── database/
+
+│   └── Database Schemas
+
+│── ai/
+
+│   └── AI Utilities
+
+├── docs/
+
+│   └── Documentation
+
+├── tests/
+
+│   └── Automated Tests
+
+├── scripts/
+
+├── README.md
+
+├── package.json
+
+====================================================
+
+4. BRANCHING STRATEGY
+
+====================================================
+
+Use:
+
+Git Flow Strategy
+
+Branches:
+
+main
+
+↓
+
+Production Code
+
+develop
+
+↓
+
+Development Integration
+
+feature/*
+
+↓
+
+New Features
+
+bugfix/*
+
+↓
+
+Bug Fixes
+
+hotfix/*
+
+↓
+
+Emergency Production Fixes
+
+release/*
+
+↓
+
+Release Preparation
+
+====================================================
+
+5. COMMIT STANDARDS
+
+====================================================
+
+Use Conventional Commits.
+
+Format:
+
+type(scope): description
+
+Examples:
+
+feat(tasks): add AI task generation
+
+fix(auth): resolve login issue
+
+docs(api): update API documentation
+
+refactor(database): optimize queries
+
+test(tasks): add task service tests
+
+Allowed Types:
+
+feat
+
+fix
+
+docs
+
+style
+
+refactor
+
+test
+
+chore
+
+perf
+
+====================================================
+
+6. PULL REQUEST PROCESS
+
+====================================================
+
+Every feature requires:
+
+Pull Request
+
+Code Review
+
+Automated Tests
+
+Approval
+
+Merge
+
+PR Template:
+
+Title
+
+Description
+
+Problem
+
+Solution
+
+Testing
+
+Screenshots
+
+Security Impact
+
+====================================================
+
+7. CODING STANDARDS
+
+====================================================
+
+Follow:
+
+TypeScript Strict Mode
+
+ESLint Rules
+
+Prettier Formatting
+
+Clean Code Principles
+
+====================================================
+
+8. FRONTEND CODING RULES
+
+====================================================
+
+React Components:
+
+Must be:
+
+Reusable
+
+Small
+
+Focused
+
+Avoid:
+
+Large Components
+
+Duplicate Logic
+
+Unnecessary State
+
+----------------------------------------------------
+
+Component Naming:
+
+Use:
+
+PascalCase
+
+Example:
+
+TaskCard.tsx
+
+AIAssistantPanel.tsx
+
+----------------------------------------------------
+
+Hooks:
+
+Custom hooks must start with:
+
+use
+
+Example:
+
+useTasks()
+
+useAIPlanner()
+
+====================================================
+
+9. BACKEND CODING RULES
+
+====================================================
+
+Follow:
+
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Database
+
+Controllers:
+
+Only handle requests.
+
+Services:
+
+Contain business logic.
+
+Repositories:
+
+Handle data access.
+
+Never:
+
+Put business logic inside controllers.
+
+====================================================
+
+10. DATABASE DEVELOPMENT RULES
+
+====================================================
+
+All changes require:
+
+Migration Files
+
+Schema Updates
+
+Documentation
+
+Testing
+
+Never:
+
+Modify production database manually.
+
+====================================================
+
+11. ENVIRONMENT MANAGEMENT
+
+====================================================
+
+Create:
+
+Development Environment
+
+Testing Environment
+
+Production Environment
+
+Environment Variables:
+
+Development:
+
+.env.local
+
+Production:
+
+Secure Environment Variables
+
+Never commit:
+
+.env files
+
+API keys
+
+Secrets
+
+====================================================
+
+12. TESTING STRATEGY
+
+====================================================
+
+Implement:
+
+Unit Testing
+
+Integration Testing
+
+End-to-End Testing
+
+====================================================
+
+UNIT TESTING
+
+====================================================
+
+Test:
+
+Business Logic
+
+Services
+
+Utilities
+
+AI Functions
+
+Tools:
+
+Vitest
+
+Jest
+
+====================================================
+
+INTEGRATION TESTING
+
+====================================================
+
+Test:
+
+API Endpoints
+
+Database Operations
+
+Authentication Flow
+
+====================================================
+
+END-TO-END TESTING
+
+====================================================
+
+Test:
+
+Complete User Journeys
+
+Examples:
+
+Registration
+
+Login
+
+Create Task
+
+AI Planning
+
+Complete Goal
+
+Tool:
+
+Playwright
+
+====================================================
+
+13. QUALITY ASSURANCE PROCESS
+
+====================================================
+
+Every feature must pass:
+
+Functional Testing
+
+Security Testing
+
+Performance Testing
+
+UX Review
+
+====================================================
+
+14. CI/CD PIPELINE
+
+====================================================
+
+Use:
+
+GitHub Actions
+
+Pipeline:
+
+Code Push
+
+↓
+
+Install Dependencies
+
+↓
+
+Run Lint
+
+↓
+
+Run Tests
+
+↓
+
+Build Application
+
+↓
+
+Security Scan
+
+↓
+
+Deploy
+
+====================================================
+
+15. GITHUB ACTIONS WORKFLOW
+
+====================================================
+
+Example:
+
+.github/
+
+workflows/
+
+├── ci.yml
+
+├── deploy.yml
+
+├── security.yml
+
+====================================================
+
+16. DEPLOYMENT ARCHITECTURE
+
+====================================================
+
+Production:
+
+Frontend:
+
+Vercel
+
+Database:
+
+Supabase
+
+Repository:
+
+GitHub
+
+Flow:
+
+Developer
+
+↓
+
+GitHub
+
+↓
+
+GitHub Actions
+
+↓
+
+Vercel Deployment
+
+↓
+
+Production
+
+====================================================
+
+17. DOCUMENTATION STANDARDS
+
+====================================================
+
+Maintain:
+
+README.md
+
+Architecture Documentation
+
+API Documentation
+
+Database Documentation
+
+Deployment Guide
+
+User Guide
+
+Developer Guide
+
+====================================================
+
+18. API DOCUMENTATION
+
+====================================================
+
+Use:
+
+OpenAPI Specification
+
+Include:
+
+Endpoint
+
+Description
+
+Request
+
+Response
+
+Authentication
+
+Errors
+
+====================================================
+
+19. CODE DOCUMENTATION
+
+====================================================
+
+Document:
+
+Complex Functions
+
+AI Logic
+
+Database Decisions
+
+Security Rules
+
+Avoid:
+
+Unnecessary Comments
+
+Code should explain itself.
+
+====================================================
+
+20. PERFORMANCE ENGINEERING
+
+====================================================
+
+Optimize:
+
+Frontend:
+
+Lazy Loading
+
+Code Splitting
+
+Image Optimization
+
+Backend:
+
+Caching
+
+Database Indexing
+
+Query Optimization
+
+AI:
+
+Token Optimization
+
+Response Caching
+
+====================================================
+
+21. ERROR MANAGEMENT
+
+====================================================
+
+Implement:
+
+Global Error Handler
+
+Error Logging
+
+User Friendly Messages
+
+Developer Debug Information
+
+====================================================
+
+22. OBSERVABILITY
+
+====================================================
+
+Monitor:
+
+Application Errors
+
+API Performance
+
+Database Performance
+
+AI Usage
+
+User Activity
+
+Tools:
+
+Sentry
+
+Vercel Analytics
+
+Supabase Monitoring
+
+====================================================
+
+23. RELEASE PROCESS
+
+====================================================
+
+Before releasing:
+
+Feature Complete
+
+Tests Passed
+
+Security Review
+
+Performance Review
+
+Documentation Updated
+
+Release Steps:
+
+Create Release Branch
+
+Final Testing
+
+Merge Main
+
+Deploy
+
+Monitor
+
+====================================================
+
+24. ENGINEERING CHECKLIST
+
+====================================================
+
+Before development:
+
+✓ Repository created
+
+✓ Architecture approved
+
+✓ Coding standards configured
+
+✓ CI/CD configured
+
+✓ Testing framework ready
+
+✓ Documentation structure created
+
+✓ Environment variables configured
+
+✓ Deployment pipeline tested
+
+====================================================
+
+END OF PART 10
+
+====================================================
