@@ -1,8 +1,19 @@
 import { Task, TaskStatus, TaskPriority } from '@/core/types/task-types';
+import { ITaskRepository } from '../repositories/task-repository-interface';
 import { MockTaskRepository } from '../repositories/mock-task-repository';
-import { Logger } from '@/core/logging/logger';
+import { EventBus } from '@/core/utils/event-bus';
 
 export class TaskService {
+  private static repository: ITaskRepository = new MockTaskRepository();
+
+  /**
+   * Allows dynamic run-time swapping of the repository implementation
+   * (e.g., swapping MockTaskRepository with SupabaseTaskRepository)
+   */
+  static setRepository(customRepository: ITaskRepository) {
+    this.repository = customRepository;
+  }
+
   /**
    * Retrieves active tasks for user
    */
@@ -10,23 +21,17 @@ export class TaskService {
     userId: string,
     filters?: { status?: TaskStatus; priority?: TaskPriority; projectId?: string }
   ): Promise<Task[]> {
-    return MockTaskRepository.getTasks(userId, filters);
+    return this.repository.getTasks(userId, filters);
   }
 
   /**
-   * Creates a new task and logs telemetry
+   * Creates a new task and triggers Domain Event
    */
   static async createTask(userId: string, taskData: Partial<Task>): Promise<Task> {
-    const task = await MockTaskRepository.createTask(userId, taskData);
+    const task = await this.repository.createTask(userId, taskData);
     
-    // Telemetry log tracking
-    await Logger.info('Task Created', {
-      userId,
-      taskId: task.id,
-      priority: task.priority,
-      status: task.status,
-      projectId: task.projectId,
-    });
+    // Broadcast Domain Event across the Event Bus
+    await EventBus.publish('TaskCreated', { userId, task });
 
     return task;
   }
@@ -35,41 +40,38 @@ export class TaskService {
    * Patches an existing task fields with safety checks
    */
   static async updateTask(id: string, updateData: Partial<Task>): Promise<Task | null> {
-    const task = await MockTaskRepository.updateTask(id, updateData);
+    const task = await this.repository.updateTask(id, updateData);
     if (!task) return null;
 
-    await Logger.info('Task Updated', {
-      taskId: task.id,
-      userId: task.userId,
-      status: task.status,
-    });
+    // Broadcast Domain Event
+    await EventBus.publish('TaskUpdated', { taskId: id, task });
 
     return task;
   }
 
   /**
-   * Marks task as completed, logs timestamp and triggers telemetry
+   * Marks task as completed, logs timestamp and triggers Domain Event
    */
   static async completeTask(id: string): Promise<Task | null> {
-    const task = await MockTaskRepository.completeTask(id);
+    const task = await this.repository.completeTask(id);
     if (!task) return null;
 
-    await Logger.info('Task Completed', {
-      taskId: task.id,
-      userId: task.userId,
-    });
+    // Broadcast Domain Event
+    await EventBus.publish('TaskCompleted', { taskId: id, task });
 
     return task;
   }
 
   /**
-   * Soft-deletes a task
+   * Soft-deletes a task and triggers Domain Event
    */
   static async deleteTask(id: string): Promise<boolean> {
-    const success = await MockTaskRepository.deleteTask(id);
+    const success = await this.repository.deleteTask(id);
     if (success) {
-      await Logger.info('Task Deleted', { taskId: id });
+      // Broadcast Domain Event
+      await EventBus.publish('TaskDeleted', { taskId: id });
     }
     return success;
   }
 }
+export type { ITaskRepository };

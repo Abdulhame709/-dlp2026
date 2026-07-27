@@ -3,11 +3,13 @@
 import { TaskStateMachine } from '../features/tasks/services/task-state-machine';
 import { TaskService } from '../features/tasks/services/task-service';
 import { signUpSchema } from '../core/security/validation';
+import { EventBus } from '../core/utils/event-bus';
 
 async function runDomainTests() {
-  console.log('🧪 Initiating Core Domain Validation & State Machine Tests...');
+  console.log('🧪 Initiating Core Domain Validation, State Machine, & EventBus Tests...');
   let testsFailed = 0;
   let testsPassed = 0;
+  let eventReceivedCount = 0;
 
   function assert(condition: boolean, testName: string) {
     if (condition) {
@@ -18,6 +20,22 @@ async function runDomainTests() {
       testsFailed++;
     }
   }
+
+  // Register decoupled Domain Event listeners on our central EventBus
+  EventBus.subscribe('TaskCreated', (data: any) => {
+    eventReceivedCount++;
+    console.log(`  🔔 [EventBus Listener]: Received event 'TaskCreated' for task ID: ${data.task.id}`);
+  });
+
+  EventBus.subscribe('TaskCompleted', (data: any) => {
+    eventReceivedCount++;
+    console.log(`  🔔 [EventBus Listener]: Received event 'TaskCompleted' for task ID: ${data.taskId}`);
+  });
+
+  EventBus.subscribe('TaskDeleted', (data: any) => {
+    eventReceivedCount++;
+    console.log(`  🔔 [EventBus Listener]: Received event 'TaskDeleted' for task ID: ${data.taskId}`);
+  });
 
   // --- UNIT TESTS ---
 
@@ -43,13 +61,14 @@ async function runDomainTests() {
   // --- INTEGRATION TESTS ---
   const demoUserId = '11111111-1111-1111-1111-111111111111';
 
-  // 3. Task Creation Integration
+  // 3. Task Creation Integration & Event Bus Verification
   const task = await TaskService.createTask(demoUserId, {
     title: 'Write Integration Tests',
     priority: 'HIGH',
     status: 'INBOX',
   });
   assert(task.id.startsWith('task-uuid-'), 'Integration: Successfully creates a new Task record with unique UUID');
+  assert(eventReceivedCount === 1, 'EventBus: TaskCreated event received asynchronously');
 
   // 4. Task Update Integration
   const updatedTask = await TaskService.updateTask(task.id, {
@@ -58,17 +77,19 @@ async function runDomainTests() {
   });
   assert(updatedTask?.status === 'PLANNED' && updatedTask.description === 'Verifying State Machine boundaries.', 'Integration: Updates task fields and rotates status safely');
 
-  // 5. Task Completion Integration
+  // 5. Task Completion Integration & Event Bus Verification
   const completedTask = await TaskService.completeTask(task.id);
   assert(completedTask?.status === 'COMPLETED' && completedTask.completedAt !== null, 'Integration: Marks task completed with actual timestamps');
+  assert(eventReceivedCount === 2, 'EventBus: TaskCompleted event received asynchronously');
 
-  // 6. Task Delete Integration
+  // 6. Task Delete Integration & Event Bus Verification
   const deleteSuccess = await TaskService.deleteTask(task.id);
   const fetchedTasks = await TaskService.getUserTasks(demoUserId, { status: 'COMPLETED' });
   const deletedStillExists = fetchedTasks.find(t => t.id === task.id);
 
   assert(deleteSuccess === true, 'Integration: Soft-deletes task successfully');
   assert(!deletedStillExists, 'Integration: Excludes deleted tasks from active queries automatically');
+  assert(eventReceivedCount === 3, 'EventBus: TaskDeleted event received asynchronously');
 
 
   // Summary
@@ -77,7 +98,7 @@ async function runDomainTests() {
     console.error('🛑 Some core domain tests failed!');
     process.exit(1);
   } else {
-    console.log('🌟 All Core Domain and State Machine validation tests passed successfully!');
+    console.log('🌟 All Core Domain, EventBus, and State Machine validation tests passed successfully!');
   }
 }
 

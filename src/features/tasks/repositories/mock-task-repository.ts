@@ -1,8 +1,9 @@
 import { Task, TaskStatus, TaskPriority } from '@/core/types/task-types';
 import { TaskStateMachine } from '../services/task-state-machine';
+import { ITaskRepository } from './task-repository-interface';
 
 // In-memory mock DB seeded with default entities matching our seed.ts file
-let mockTasksTable: Task[] = [
+const mockTasksTable: Task[] = [
   {
     id: '66666666-6666-6666-6666-666666666661',
     userId: '11111111-1111-1111-1111-111111111111',
@@ -30,8 +31,8 @@ let mockTasksTable: Task[] = [
   },
 ];
 
-export class MockTaskRepository {
-  static async getTasks(userId: string, filters?: { status?: TaskStatus; priority?: TaskPriority; projectId?: string }): Promise<Task[]> {
+export class MockTaskRepository implements ITaskRepository {
+  async getTasks(userId: string, filters?: { status?: TaskStatus; priority?: TaskPriority; projectId?: string }): Promise<Task[]> {
     let tasks = mockTasksTable.filter(t => t.userId === userId && !t.deletedAt);
 
     if (filters) {
@@ -43,12 +44,12 @@ export class MockTaskRepository {
     return tasks;
   }
 
-  static async getTaskById(id: string): Promise<Task | null> {
+  async getTaskById(id: string): Promise<Task | null> {
     const task = mockTasksTable.find(t => t.id === id && !t.deletedAt);
     return task || null;
   }
 
-  static async createTask(userId: string, taskData: Partial<Task>): Promise<Task> {
+  async createTask(userId: string, taskData: Partial<Task>): Promise<Task> {
     const newTask: Task = {
       id: `task-uuid-${Date.now()}`,
       userId,
@@ -71,7 +72,7 @@ export class MockTaskRepository {
     return newTask;
   }
 
-  static async updateTask(id: string, updateData: Partial<Task>): Promise<Task | null> {
+  async updateTask(id: string, updateData: Partial<Task>): Promise<Task | null> {
     const taskIndex = mockTasksTable.findIndex(t => t.id === id && !t.deletedAt);
     if (taskIndex === -1) return null;
 
@@ -94,7 +95,7 @@ export class MockTaskRepository {
     return updatedTask;
   }
 
-  static async deleteTask(id: string): Promise<boolean> {
+  async deleteTask(id: string): Promise<boolean> {
     const taskIndex = mockTasksTable.findIndex(t => t.id === id && !t.deletedAt);
     if (taskIndex === -1) return false;
 
@@ -104,7 +105,7 @@ export class MockTaskRepository {
     return true;
   }
 
-  static async completeTask(id: string): Promise<Task | null> {
+  async completeTask(id: string): Promise<Task | null> {
     return this.updateTask(id, {
       status: 'COMPLETED',
       completedAt: new Date(),
