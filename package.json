@@ -10,13 +10,15 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "test:db": "npx tsx src/tests/db-test.ts"
+    "test:db": "npx tsx src/tests/db-test.ts",
+    "test:auth": "npx tsx src/tests/auth-test.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.9.1",
+    "@supabase/ssr": "^0.12.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.27.0",
