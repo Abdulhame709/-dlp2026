@@ -1,187 +1,200 @@
 # 03. Database Schema & Data Model Design
 
-## 1. Core Entity Relationship Model
-The physical PostgreSQL schema is designed for scalability and enforces clean relational integrity. 
+## 1. Entity Relationship Diagram (ERD)
+
+Our final, production-grade schema topographical relationships are defined as follows:
 
 ```
-  [users] ── (1:1) ── [profiles]
+  [profiles] ◄──(1:1)──► [auth.users]
      │
-     └── (1:M) ── [organization_members] ── (M:1) ── [organizations]
-                       │                                   │
-                       │ (Member can view)                 │
-                       ▼                                   ▼
-                [projects] ◄──────── (1:M) ───────── [projects]
-                       │
-                       ▼
-                 [milestones] ◄────── (1:M) ─────── [tasks]
+     ├── (1:M) ──► [organization_members] ──(M:1)──► [organizations]
+     │                                                     │
+     │                                                     ├─ (1:M) ──► [projects]
+     │                                                     │               │
+     │                                                     │               ▼
+     │                                                     │             [tasks]
+     │                                                     │               ▲
+     │                                                     └─ (1:M) ───────┤
+     │                                                                     │
+     └───────────────────────── (1:M) ─────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Table Schemas & Key Fields
+## 2. Table Specifications & Primary Schemas
 
-### 2.1 Identity & User Tables
+All table schemas use lower `snake_case` with secure `UUID` primary keys, standard `timestamptz` date fields, and explicit cascading foreign keys.
 
-#### TABLE: `users`
-*Purpose:* Holds system-level authentication identity.
-- `id`: `UUID` (Primary Key)
-- `email`: `VARCHAR` (Unique, Indexed)
-- `password_hash`: `VARCHAR`
-- `email_verified`: `BOOLEAN` (Default: `false`)
-- `status`: `ENUM` (`ACTIVE`, `INACTIVE`, `SUSPENDED`)
-- `created_at`: `TIMESTAMP` (Default: `NOW()`)
-- `updated_at`: `TIMESTAMP`
-
-#### TABLE: `profiles`
-*Purpose:* User metadata and customization.
-- `id`: `UUID` (Primary Key)
-- `user_id`: `UUID` (Foreign Key -> `users.id`, Cascades)
-- `full_name`: `VARCHAR`
-- `avatar_url`: `VARCHAR` (Nullable)
-- `phone`: `VARCHAR` (Nullable)
-- `timezone`: `VARCHAR` (Default: `'UTC'`)
-- `language`: `VARCHAR` (Default: `'en'`)
-- `theme_preference`: `VARCHAR` (Default: `'light'`)
-- `created_at`: `TIMESTAMP`
-
-#### TABLE: `user_preferences`
-*Purpose:* Granular settings for AI and notification styles.
-- `id`: `UUID` (Primary Key)
-- `user_id`: `UUID` (Foreign Key -> `users.id`)
-- `working_hours_start`: `VARCHAR` (Default: `'09:00'`)
-- `working_hours_end`: `VARCHAR` (Default: `'17:00'`)
-- `planning_style`: `VARCHAR` (Default: `'balanced'`)
-- `notification_email`: `BOOLEAN` (Default: `true`)
-- `notification_push`: `BOOLEAN` (Default: `true`)
-- `ai_behavior_style`: `VARCHAR` (Default: `'supportive'`)
-
----
-
-### 2.2 Organizations & Team Tables (Multi-Tenancy)
-
-#### TABLE: `organizations`
-*Purpose:* Customer container for teams/enterprises.
-- `id`: `UUID` (Primary Key)
-- `name`: `VARCHAR`
-- `logo_url`: `VARCHAR` (Nullable)
-- `owner_id`: `UUID` (Foreign Key -> `users.id`)
-- `subscription_plan`: `VARCHAR` (Default: `'FREE'`)
-- `created_at`: `TIMESTAMP`
-
-#### TABLE: `organization_members`
-*Purpose:* Many-to-many lookup for organizational tenancy.
-- `id`: `UUID` (Primary Key)
-- `organization_id`: `UUID` (Foreign Key -> `organizations.id`, Indexed)
-- `user_id`: `UUID` (Foreign Key -> `users.id`, Indexed)
-- `role`: `ENUM` (`OWNER`, `ADMIN`, `MEMBER`) (Default: `'MEMBER'`)
-- `joined_at`: `TIMESTAMP`
-
----
-
-### 2.3 Task & Project Management Tables
-
-#### TABLE: `projects`
-*Purpose:* Containers for large work objectives.
-- `id`: `UUID` (Primary Key)
-- `organization_id`: `UUID` (Foreign Key -> `organizations.id`, Nullable for individual accounts)
-- `owner_id`: `UUID` (Foreign Key -> `users.id`)
-- `name`: `VARCHAR`
-- `description`: `TEXT` (Nullable)
-- `status`: `ENUM` (`ACTIVE`, `ARCHIVED`, `COMPLETED`)
-- `created_at`: `TIMESTAMP`
-- `updated_at`: `TIMESTAMP`
-
-#### TABLE: `tasks`
-*Purpose:* Primary productivity execution entity.
-- `id`: `UUID` (Primary Key)
-- `user_id`: `UUID` (Foreign Key -> `users.id`, Indexed)
-- `organization_id`: `UUID` (Foreign Key -> `organizations.id`, Nullable, Indexed)
-- `project_id`: `UUID` (Foreign Key -> `projects.id`, Nullable, Indexed)
-- `goal_id`: `UUID` (Nullable)
-- `parent_task_id`: `UUID` (Self-referential Key, Nullable)
-- `title`: `VARCHAR`
-- `description`: `TEXT` (Nullable)
-- `status`: `ENUM` (`INBOX`, `PLANNED`, `IN_PROGRESS`, `WAITING`, `COMPLETED`, `ARCHIVED`)
-- `priority`: `ENUM` (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`)
-- `due_date`: `TIMESTAMP` (Nullable)
-- `estimated_duration`: `INTEGER` (In minutes, Nullable)
-- `actual_duration`: `INTEGER` (In minutes, Nullable)
-- `created_at`: `TIMESTAMP`
-- `updated_at`: `TIMESTAMP`
-- `completed_at`: `TIMESTAMP` (Nullable)
-
----
-
-### 2.4 Intelligence & Telemetry Tables
-
-#### TABLE: `ai_conversations`
-*Purpose:* Conversation sessions with the Assistant.
-- `id`: `UUID` (Primary Key)
-- `user_id`: `UUID` (Foreign Key -> `users.id`, Indexed)
-- `title`: `VARCHAR`
-- `created_at`: `TIMESTAMP`
-
-#### TABLE: `ai_messages`
-*Purpose:* Individual messages within a chat.
-- `id`: `UUID` (Primary Key)
-- `conversation_id`: `UUID` (Foreign Key -> `ai_conversations.id`, Indexed)
-- `role`: `ENUM` (`SYSTEM`, `USER`, `ASSISTANT`)
-- `content`: `TEXT`
-- `token_usage`: `INTEGER` (Nullable)
-- `created_at`: `TIMESTAMP`
-
-#### TABLE: `activity_logs` (Event Tracking / Telemetry)
-*Purpose:* Captures the Event Tracking Architecture.
-- `id`: `UUID` (Primary Key)
-- `user_id`: `UUID` (Foreign Key -> `users.id`, Indexed)
-- `event_name`: `VARCHAR` (Indexed, e.g., `'user_created_task'`)
-- `metadata`: `JSONB` (Dynamic metadata payload)
-- `created_at`: `TIMESTAMP` (Default: `NOW()`)
-
----
-
-## 3. Indexing Strategy & Performance
-To ensure sub-second response times on dashboard operations and telemetry joins, PostgreSQL primary indexes are configured on high-read columns:
+### 2.1 Table: `profiles`
+*Purpose:* Maps 1:1 to Supabase's `auth.users(id)`.
 
 ```sql
--- Indexes for Task queries
-CREATE INDEX idx_tasks_user_id ON tasks(user_id);
-CREATE INDEX idx_tasks_org_id ON tasks(organization_id);
-CREATE INDEX idx_tasks_due_date ON tasks(due_date);
-CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE TABLE public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name VARCHAR(255) NOT NULL,
+    avatar_url VARCHAR(512),
+    timezone VARCHAR(100) NOT NULL DEFAULT 'UTC',
+    language VARCHAR(10) NOT NULL DEFAULT 'en',
+    preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL
+);
+```
 
--- Indexes for Multi-Tenant verification
-CREATE INDEX idx_org_members_user ON organization_members(user_id);
-CREATE INDEX idx_org_members_org ON organization_members(organization_id);
+### 2.2 Table: `organizations`
+*Purpose:* Tenancy groups (supporting individual or multi-member team/enterprise setups).
 
--- Indexes for Event Tracking Analytics
-CREATE INDEX idx_activity_logs_user_event ON activity_logs(user_id, event_name);
+```sql
+CREATE TABLE public.organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    logo_url VARCHAR(512),
+    owner_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+    subscription_plan VARCHAR(50) NOT NULL DEFAULT 'FREE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID NOT NULL REFERENCES public.profiles(id),
+    updated_by UUID REFERENCES public.profiles(id)
+);
+```
+
+### 2.3 Table: `organization_members`
+*Purpose:* Many-to-Many association of users and organizations.
+
+```sql
+CREATE TABLE public.organization_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL DEFAULT 'MEMBER',
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID REFERENCES public.profiles(id),
+    updated_by UUID REFERENCES public.profiles(id),
+    CONSTRAINT unique_org_user UNIQUE (organization_id, user_id)
+);
+```
+
+### 2.4 Table: `projects`
+*Purpose:* Parent containers for milestones and tasks.
+
+```sql
+CREATE TABLE public.projects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
+    owner_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    created_by UUID NOT NULL REFERENCES public.profiles(id),
+    updated_by UUID REFERENCES public.profiles(id)
+);
+```
+
+### 2.5 Table: `tasks`
+*Purpose:* Actionable execution logs. Supports Soft-Delete.
+
+```sql
+CREATE TABLE public.tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
+    project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+    goal_id UUID REFERENCES public.goals(id) ON DELETE SET NULL,
+    parent_task_id UUID REFERENCES public.tasks(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'INBOX',
+    priority VARCHAR(50) NOT NULL DEFAULT 'MEDIUM',
+    due_date TIMESTAMPTZ,
+    estimated_duration INTEGER,
+    actual_duration INTEGER,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    created_by UUID NOT NULL REFERENCES public.profiles(id),
+    updated_by UUID REFERENCES public.profiles(id)
+);
+```
+
+### 2.6 Table: `goals`
+*Purpose:* Strategic progress-tracked objectives.
+
+```sql
+CREATE TABLE public.goals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    deadline TIMESTAMPTZ,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    progress INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    created_by UUID NOT NULL REFERENCES public.profiles(id),
+    updated_by UUID REFERENCES public.profiles(id)
+);
+```
+
+### 2.7 Table: `activity_logs`
+*Purpose:* Product telemetry tracking metrics.
+
+```sql
+CREATE TABLE public.activity_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    event_name VARCHAR(100) NOT NULL,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 2.8 Table: `feature_flags`
+*Purpose:* Dynamic feature toggling.
+
+```sql
+CREATE TABLE public.feature_flags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
 
 ---
 
-## 4. Supabase Row Level Security (RLS) Rules
-Row Level Security enforces data privacy directly inside the PostgreSQL engine. Here is our declarative RLS policy mapping:
+## 3. Indexing Strategy & Performance Configuration
+To support high-frequency reads, the following indices are deployed:
+- `idx_tasks_user_status_deleted` on `tasks(user_id, status)` where `deleted_at IS NULL` (inbox fetches).
+- `idx_activity_logs_user_event` on `activity_logs(user_id, event_name, created_at DESC)` (analytics computations).
+- `idx_org_members_user` on `organization_members(user_id)` (tenant permission checks).
 
-```sql
--- Enforce RLS on Tasks
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+---
 
--- Policy 1: Individual Task Access
-CREATE POLICY task_individual_isolation_policy ON tasks
-  FOR ALL
-  USING (user_id = auth.uid() AND organization_id IS NULL);
+## 4. Row Level Security (RLS) Policy Specifications
+Postgres RLS is enabled on all tables.
+- **Profiles Policy:** Users can read profiles (`deleted_at IS NULL`), but can only update their own profile (`id = auth.uid()`).
+- **Organizations Policy:** Users can only query organizations where their user ID has an active membership inside `organization_members`.
+- **Tasks Policy:** Evaluates the user's ID for personal tasks, and checks the user's organizational membership for team-scoped tasks.
 
--- Policy 2: Team Task Access
-CREATE POLICY task_team_isolation_policy ON tasks
-  FOR ALL
-  USING (
-    organization_id IS NOT NULL 
-    AND EXISTS (
-      SELECT 1 FROM organization_members
-      WHERE organization_members.organization_id = tasks.organization_id
-      AND organization_members.user_id = auth.uid()
-    )
-  );
-```
-These security rules prevent data leakage across users and corporate organizations, even if backend middleware errors occur.
+---
+
+## 5. Migration History (سجل عمليات الترحيل السحابة)
+
+### Migration 1: `20260727204500_init_cortex_db`
+- **Date:** July 27, 2026
+- **Status:** APPROVED & DEPLOYED
+- **Type:** DDL Initialization
+- **Description:** Deployed extensions (`uuid-ossp`, `pgcrypto`), timestamp trigger routines, created the 8 application tables with cascade constraints, configured custom indices, enabled RLS policies, and established development seeding patterns.
