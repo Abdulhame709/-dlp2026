@@ -7,6 +7,7 @@
 ## وثائق المشروع (Project Documentation)
 
 - 📄 **[Technical Implementation Plan (Architecture Validation)](TECHNICAL_IMPLEMENTATION_PLAN.md)**: وثيقة المراجعة البرمجية الكاملة التي تحدد فهم المطور للمشروع، الرؤية الفنية، وهندسة النظام، وتفصيل طبقات البرمجة (Frontend, Backend, Database, AI Layer) وحل التعارضات البرمجية وخارطة الطريق التفصيلية للبناء.
+- 📄 **[Database Blueprint & Design Validation](docs/08-database-blueprint.md)**: المخطط الهندسي التفصيلي لقاعدة بيانات PostgreSQL السحابية. يشتمل على رسم تخطيطي للهيكل والعلاقات (ERD)، ومخطط جداول المستخدمين والبيانات الشخصية متزامنة مع Supabase Auth، وتأسيس حقول التدقيق والتحديث التلقائي عبر Triggers، واستراتيجية الحذف اللطيف (Soft Delete)، وتحليلات الأداء والفهرسة، وخطة الأمان الصارم (RLS)، وهيكلية بذور البيانات التجريبية والتكامل المستمر لقواعد البيانات (Migrations).
 - 📄 **[Master Product Prompt](MASTER_PROMPT.md)**: الدليل الشامل لـ Cortex AI ويحتوي حالياً على:
   - **Part 1 (Product Vision & Strategic Foundation)**: الرؤية الاستراتيجية وهوية المنتج والجمهور المستهدف والمبادئ الأساسية لنظام Cortex AI.
   - **Part 2 (Market Analysis & Competitive Strategy)**: تحليل شامل للسوق والمنافسين (مثل Notion و Todoist و Motion و ClickUp) واستراتيجية التموضع والتميز الفريد للمنصة (USP).
