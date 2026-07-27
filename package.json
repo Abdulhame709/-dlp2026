@@ -14,7 +14,8 @@
     "test:auth": "npx tsx src/tests/auth-test.ts",
     "test:onboarding": "npx tsx src/tests/onboarding-test.ts",
     "test:domain": "npx tsx src/tests/domain-test.ts",
-    "test:analytics": "npx tsx src/tests/analytics-test.ts"
+    "test:analytics": "npx tsx src/tests/analytics-test.ts",
+    "test:ai": "npx tsx src/tests/ai-core-test.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
