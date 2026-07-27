@@ -3090,3 +3090,894 @@ Accessibility Review
 END OF PART 4
 
 ====================================================
+
+
+====================================================
+
+PART 5
+
+TECHNICAL ARCHITECTURE & SYSTEM DESIGN
+
+====================================================
+
+ROLE:
+
+Act as a Principal Software Architect responsible for designing an enterprise-grade SaaS architecture.
+
+Your objective is to create a scalable, secure, maintainable, and future-proof technical foundation for Cortex AI.
+
+The architecture must support:
+
+- Millions of users
+
+- Real-time interactions
+
+- AI processing
+
+- Data analytics
+
+- Future mobile applications
+
+- Team collaboration
+
+- Enterprise features
+
+====================================================
+
+1. ARCHITECTURE PRINCIPLES
+
+====================================================
+
+The system must follow:
+
+1. Clean Architecture
+
+Separate:
+
+- Presentation Layer
+
+- Application Layer
+
+- Domain Layer
+
+- Infrastructure Layer
+
+2. SOLID Principles
+
+3. Domain Driven Design (DDD)
+
+4. API First Approach
+
+5. Security By Design
+
+6. Scalability First
+
+7. Cloud Native Architecture
+
+8. Component-Based Development
+
+====================================================
+
+2. HIGH LEVEL SYSTEM ARCHITECTURE
+
+====================================================
+
+Cortex AI architecture consists of:
+
+                    USER
+
+                     |
+
+                     |
+
+              WEB APPLICATION
+
+              Next.js Frontend
+
+                     |
+
+                     |
+
+              APPLICATION LAYER
+
+                     |
+
+       --------------------------------
+
+       |              |               |
+
+    API Layer     AI Engine     Business Logic
+
+       |              |               |
+
+       --------------------------------
+
+                     |
+
+              DATABASE LAYER
+
+                     |
+
+        PostgreSQL + Supabase
+
+                     |
+
+        Storage + Realtime + Auth
+
+====================================================
+
+3. TECHNOLOGY STACK
+
+====================================================
+
+Frontend:
+
+Framework:
+
+Next.js 15
+
+Language:
+
+TypeScript
+
+UI:
+
+React 19
+
+Styling:
+
+Tailwind CSS
+
+Component System:
+
+shadcn/ui
+
+Animation:
+
+Framer Motion
+
+State Management:
+
+Zustand
+
+Forms:
+
+React Hook Form
+
+Validation:
+
+Zod
+
+Charts:
+
+Recharts
+
+----------------------------------------------------
+
+Backend:
+
+Runtime:
+
+Node.js
+
+Framework:
+
+Next.js Server Actions
+
+API:
+
+REST / tRPC
+
+ORM:
+
+Prisma
+
+Validation:
+
+Zod
+
+Background Jobs:
+
+Queue-based architecture
+
+----------------------------------------------------
+
+Database:
+
+Primary Database:
+
+PostgreSQL
+
+Platform:
+
+Supabase
+
+Features:
+
+- Authentication
+
+- Database
+
+- Storage
+
+- Realtime
+
+- Edge Functions
+
+----------------------------------------------------
+
+Hosting:
+
+Frontend:
+
+Vercel
+
+Database:
+
+Supabase
+
+Repository:
+
+GitHub
+
+====================================================
+
+4. FRONTEND ARCHITECTURE
+
+====================================================
+
+The frontend must follow a scalable structure.
+
+Architecture:
+
+Presentation
+
+↓
+
+Components
+
+↓
+
+Hooks
+
+↓
+
+Services
+
+↓
+
+API Layer
+
+↓
+
+Backend
+
+====================================================
+
+5. FRONTEND FOLDER STRUCTURE
+
+====================================================
+
+Use:
+
+src/
+
+├── app/
+
+│   ├── (public)/
+
+│   ├── (auth)/
+
+│   ├── (dashboard)/
+
+│
+
+├── components/
+
+│   ├── ui/
+
+│   ├── dashboard/
+
+│   ├── ai/
+
+│   ├── tasks/
+
+│   ├── projects/
+
+│
+
+├── features/
+
+│   ├── tasks/
+
+│   ├── projects/
+
+│   ├── goals/
+
+│   ├── analytics/
+
+│
+
+├── hooks/
+
+├── services/
+
+├── stores/
+
+├── utils/
+
+├── types/
+
+├── config/
+
+====================================================
+
+6. BACKEND ARCHITECTURE
+
+====================================================
+
+Backend must be organized into:
+
+Controllers
+
+↓
+
+Services
+
+↓
+
+Repositories
+
+↓
+
+Database
+
+Example:
+
+Task Controller
+
+↓
+
+Task Service
+
+↓
+
+Task Repository
+
+↓
+
+PostgreSQL
+
+====================================================
+
+7. DOMAIN MODULES
+
+====================================================
+
+The backend must be divided into domains:
+
+User Domain
+
+Task Domain
+
+Project Domain
+
+Goal Domain
+
+Calendar Domain
+
+Habit Domain
+
+Analytics Domain
+
+AI Domain
+
+Notification Domain
+
+Subscription Domain
+
+Organization Domain
+
+Audit Domain
+
+====================================================
+
+8. AI SYSTEM ARCHITECTURE
+
+====================================================
+
+AI is the core of Cortex AI.
+
+Build a modular AI architecture.
+
+====================================================
+
+AI LAYER COMPONENTS
+
+====================================================
+
+1. AI Gateway
+
+Responsible for:
+
+- Provider management
+
+- API communication
+
+- Usage tracking
+
+Support:
+
+OpenAI
+
+Anthropic
+
+Google Gemini
+
+Future AI providers
+
+----------------------------------------------------
+
+2. Prompt Management System
+
+Store and manage:
+
+System Prompts
+
+User Prompts
+
+Templates
+
+Versions
+
+Features:
+
+Prompt versioning
+
+Testing
+
+Optimization
+
+----------------------------------------------------
+
+3. AI Memory System
+
+Purpose:
+
+Allow AI to understand user context.
+
+Memory Types:
+
+Short-Term Memory:
+
+Current conversation
+
+Long-Term Memory:
+
+User preferences
+
+Goals
+
+Patterns
+
+Previous interactions
+
+The user must control:
+
+- View memory
+
+- Edit memory
+
+- Delete memory
+
+----------------------------------------------------
+
+4. AI Planning Engine
+
+Responsible for:
+
+Goal Analysis
+
+Task Breakdown
+
+Scheduling
+
+Priority Calculation
+
+Optimization
+
+Example:
+
+Input:
+
+"Complete financial certification in 3 months."
+
+Output:
+
+Goal
+
+↓
+
+Learning Plan
+
+↓
+
+Weekly Tasks
+
+↓
+
+Daily Schedule
+
+----------------------------------------------------
+
+5. AI Recommendation Engine
+
+Provides:
+
+Productivity suggestions
+
+Task improvements
+
+Time recommendations
+
+Behavior insights
+
+====================================================
+
+9. DATABASE ARCHITECTURE
+
+====================================================
+
+Database:
+
+PostgreSQL
+
+Design Principles:
+
+- Normalization
+
+- Data integrity
+
+- Index optimization
+
+- Audit tracking
+
+====================================================
+
+CORE DATABASE ENTITIES
+
+====================================================
+
+Users
+
+Profiles
+
+Organizations
+
+Teams
+
+Roles
+
+Permissions
+
+Tasks
+
+TaskComments
+
+TaskAttachments
+
+Projects
+
+ProjectMembers
+
+Milestones
+
+Goals
+
+GoalMilestones
+
+Habits
+
+HabitLogs
+
+CalendarEvents
+
+AIConversations
+
+AIMessages
+
+AIMemory
+
+AIRecommendations
+
+ProductivityScores
+
+Notifications
+
+Files
+
+Notes
+
+Subscriptions
+
+Payments
+
+AuditLogs
+
+====================================================
+
+10. AUTHENTICATION ARCHITECTURE
+
+====================================================
+
+Authentication must support:
+
+Email Login
+
+OAuth:
+
+Google
+
+Microsoft
+
+Apple
+
+Session Management
+
+Password Reset
+
+Email Verification
+
+Multi Factor Authentication (Future)
+
+====================================================
+
+11. AUTHORIZATION SYSTEM
+
+====================================================
+
+Implement RBAC.
+
+Roles:
+
+FREE USER
+
+PREMIUM USER
+
+TEAM ADMIN
+
+ORGANIZATION OWNER
+
+SYSTEM ADMIN
+
+Permissions:
+
+Create
+
+Read
+
+Update
+
+Delete
+
+Manage
+
+====================================================
+
+12. API ARCHITECTURE
+
+====================================================
+
+The API layer must be:
+
+Secure
+
+Typed
+
+Documented
+
+Versioned
+
+Example:
+
+API Version:
+
+/api/v1/
+
+Structure:
+
+/api/v1/users
+
+/api/v1/tasks
+
+/api/v1/projects
+
+/api/v1/goals
+
+/api/v1/ai
+
+/api/v1/analytics
+
+====================================================
+
+13. REAL-TIME ARCHITECTURE
+
+====================================================
+
+Use Supabase Realtime.
+
+Real-time events:
+
+Task Updates
+
+Notifications
+
+Team Collaboration
+
+AI Responses
+
+Activity Feed
+
+====================================================
+
+14. BACKGROUND PROCESSING
+
+====================================================
+
+Implement background jobs for:
+
+AI Analysis
+
+Daily Planning Generation
+
+Weekly Reports
+
+Notifications
+
+Data Processing
+
+Analytics Calculation
+
+====================================================
+
+15. SEARCH ARCHITECTURE
+
+====================================================
+
+Implement global search:
+
+Search:
+
+Tasks
+
+Projects
+
+Notes
+
+Documents
+
+Goals
+
+Future:
+
+Semantic AI Search
+
+Vector Database Support
+
+====================================================
+
+16. FILE STORAGE ARCHITECTURE
+
+====================================================
+
+Use:
+
+Supabase Storage
+
+Support:
+
+Documents
+
+Images
+
+Attachments
+
+Requirements:
+
+File Validation
+
+Size Limits
+
+Secure URLs
+
+Access Control
+
+====================================================
+
+17. LOGGING & MONITORING
+
+====================================================
+
+Implement:
+
+Application Logs
+
+Error Tracking
+
+Performance Monitoring
+
+Security Logs
+
+Audit Logs
+
+====================================================
+
+18. SCALABILITY STRATEGY
+
+====================================================
+
+The architecture must support:
+
+Horizontal Scaling
+
+Database Optimization
+
+Caching
+
+CDN
+
+Background Workers
+
+Microservice Migration Future Ready
+
+====================================================
+
+19. FUTURE MOBILE ARCHITECTURE
+
+====================================================
+
+The backend must support future:
+
+iOS App
+
+Android App
+
+using:
+
+React Native
+
+or
+
+Flutter
+
+====================================================
+
+20. ARCHITECTURE QUALITY CHECKLIST
+
+====================================================
+
+Before implementation verify:
+
+✓ Clear separation of concerns
+
+✓ Scalable database design
+
+✓ Secure authentication
+
+✓ Modular AI architecture
+
+✓ API documentation
+
+✓ Future mobile support
+
+✓ Production deployment readiness
+
+✓ Monitoring strategy
+
+✓ Backup strategy
+
+====================================================
+
+END OF PART 5
+
+====================================================
