@@ -2175,3 +2175,918 @@ The product is successful when users can:
 END OF PART 3
 
 ====================================================
+
+
+====================================================
+
+PART 4
+
+UX / UI PRODUCT EXPERIENCE SPECIFICATION
+
+====================================================
+
+ROLE:
+
+Act as a Senior UX Architect, Product Designer, and Design System Lead.
+
+Your responsibility is to design a premium, intuitive, scalable user experience for Cortex AI.
+
+The experience must compete with modern SaaS products while maintaining a unique AI-first identity.
+
+====================================================
+
+1. UX DESIGN PRINCIPLES
+
+====================================================
+
+All interfaces must follow these principles:
+
+1. AI FIRST
+
+The user should feel that AI is integrated naturally into every workflow.
+
+2. SIMPLE BY DEFAULT
+
+Avoid complexity.
+
+Hide advanced features until needed.
+
+3. ACTION ORIENTED
+
+Every screen should guide users toward completing meaningful actions.
+
+4. LOW COGNITIVE LOAD
+
+Reduce:
+
+- Decision fatigue
+
+- Manual configuration
+
+- Repetitive actions
+
+5. PERSONALIZED EXPERIENCE
+
+The interface should adapt according to:
+
+- User behavior
+
+- Preferences
+
+- Goals
+
+- Working style
+
+6. PREMIUM SAAS EXPERIENCE
+
+The product should feel:
+
+- Modern
+
+- Clean
+
+- Fast
+
+- Professional
+
+- Trustworthy
+
+====================================================
+
+2. INFORMATION ARCHITECTURE
+
+====================================================
+
+The application structure:
+
+PUBLIC AREA
+
+/
+
+Landing Page
+
+/features
+
+Product Features
+
+/pricing
+
+Pricing
+
+/about
+
+About Product
+
+/blog
+
+Knowledge Content
+
+/contact
+
+Contact
+
+/auth
+
+Authentication
+
+APPLICATION AREA
+
+/app/dashboard
+
+Main Dashboard
+
+/app/assistant
+
+AI Assistant
+
+/app/tasks
+
+Task Management
+
+/app/projects
+
+Projects
+
+/app/calendar
+
+Calendar
+
+/app/goals
+
+Goals
+
+/app/habits
+
+Habits
+
+/app/analytics
+
+Analytics
+
+/app/knowledge
+
+Knowledge Center
+
+/app/notifications
+
+Notifications
+
+/app/settings
+
+Settings
+
+/app/profile
+
+User Profile
+
+/app/billing
+
+Subscription Management
+
+====================================================
+
+3. USER JOURNEY
+
+====================================================
+
+USER REGISTRATION FLOW:
+
+Step 1:
+
+User visits landing page
+
+Step 2:
+
+Clicks "Start with AI"
+
+Step 3:
+
+Creates account
+
+Step 4:
+
+AI onboarding begins
+
+Step 5:
+
+System collects:
+
+- User role
+
+- Main goals
+
+- Work style
+
+- Available working hours
+
+- Productivity challenges
+
+Step 6:
+
+AI creates initial productivity profile
+
+Step 7:
+
+User enters dashboard
+
+====================================================
+
+4. AI ONBOARDING EXPERIENCE
+
+====================================================
+
+Purpose:
+
+Create personalization from first interaction.
+
+Screen:
+
+AI Welcome Assistant
+
+Components:
+
+AI Avatar
+
+Welcome Message
+
+Goal Input
+
+Quick Questions
+
+Progress Indicator
+
+Example:
+
+AI:
+
+"Welcome to Cortex AI. I will help you organize your goals and create a productivity system designed for you."
+
+Questions:
+
+"What is your main focus?"
+
+Options:
+
+- Work
+
+- Study
+
+- Business
+
+- Personal Growth
+
+"What do you want to improve?"
+
+Options:
+
+- Time Management
+
+- Focus
+
+- Organization
+
+- Goal Achievement
+
+====================================================
+
+5. DASHBOARD EXPERIENCE
+
+====================================================
+
+Screen:
+
+Main Productivity Dashboard
+
+Purpose:
+
+Provide a complete overview of the user's day.
+
+Layout:
+
+TOP AREA:
+
+Welcome Message:
+
+"Good morning, Abdul."
+
+AI Recommendation Card:
+
+"Your highest priority today is completing the financial analysis task."
+
+----------------------------------------------------
+
+MAIN CARDS:
+
+Card 1:
+
+Today's Focus
+
+Displays:
+
+- Top 3 priorities
+
+- Estimated completion time
+
+- Progress
+
+----------------------------------------------------
+
+Card 2:
+
+AI Daily Plan
+
+Displays:
+
+Morning
+
+Afternoon
+
+Evening
+
+----------------------------------------------------
+
+Card 3:
+
+Productivity Score
+
+Displays:
+
+Current score
+
+Trend
+
+Recommendations
+
+----------------------------------------------------
+
+Card 4:
+
+Tasks Overview
+
+Displays:
+
+Completed
+
+Pending
+
+Overdue
+
+----------------------------------------------------
+
+Card 5:
+
+Goals Progress
+
+Displays:
+
+Active goals
+
+Progress percentage
+
+----------------------------------------------------
+
+Card 6:
+
+Habit Tracking
+
+Displays:
+
+Today's habits
+
+====================================================
+
+6. AI ASSISTANT SCREEN
+
+====================================================
+
+Screen:
+
+AI Executive Assistant
+
+Purpose:
+
+Main conversational interface.
+
+Layout:
+
+Left:
+
+Conversation History
+
+Center:
+
+Chat Interface
+
+Right:
+
+Context Panel
+
+Context Panel:
+
+Current Goals
+
+Active Projects
+
+Upcoming Tasks
+
+Calendar
+
+----------------------------------------------------
+
+AI Actions:
+
+The assistant can:
+
+Create Task
+
+Create Project
+
+Generate Plan
+
+Analyze Productivity
+
+Summarize Information
+
+Suggest Improvements
+
+Schedule Activities
+
+====================================================
+
+7. TASK MANAGEMENT SCREEN
+
+====================================================
+
+Screen:
+
+Smart Tasks
+
+Views:
+
+1. List View
+
+2. Kanban View
+
+3. Calendar View
+
+4. Timeline View
+
+Task Card Components:
+
+Task Name
+
+Priority
+
+Status
+
+Deadline
+
+AI Recommendation
+
+Estimated Time
+
+Progress
+
+Actions:
+
+Complete
+
+Edit
+
+Move
+
+Schedule
+
+Delegate
+
+Archive
+
+====================================================
+
+8. PROJECT SCREEN
+
+====================================================
+
+Screen:
+
+Projects Workspace
+
+Components:
+
+Project Cards
+
+Project Progress
+
+Timeline
+
+Milestones
+
+Team Members
+
+Activity Feed
+
+Files
+
+AI Insights
+
+----------------------------------------------------
+
+AI Project Assistant:
+
+Example:
+
+"Your project is delayed by 3 days. I recommend adjusting these milestones."
+
+====================================================
+
+9. CALENDAR EXPERIENCE
+
+====================================================
+
+Screen:
+
+Smart Calendar
+
+Views:
+
+Day
+
+Week
+
+Month
+
+Features:
+
+Drag & Drop
+
+Task Scheduling
+
+AI Time Blocking
+
+Meeting Management
+
+Focus Sessions
+
+----------------------------------------------------
+
+AI Suggestions:
+
+"You have 2 hours free tomorrow morning. Should I schedule your research tasks?"
+
+====================================================
+
+10. GOALS SCREEN
+
+====================================================
+
+Screen:
+
+Goals Center
+
+Components:
+
+Goal Cards
+
+Progress Rings
+
+Milestones
+
+AI Roadmap
+
+Timeline
+
+Goal Analytics
+
+----------------------------------------------------
+
+Goal Creation Flow:
+
+User enters:
+
+"I want to learn data analysis."
+
+AI creates:
+
+Goal:
+
+Data Analysis Mastery
+
+Milestones:
+
+Foundation
+
+Practice
+
+Projects
+
+Certification
+
+====================================================
+
+11. HABITS SCREEN
+
+====================================================
+
+Screen:
+
+Habit Tracker
+
+Components:
+
+Habit Cards
+
+Calendar Tracking
+
+Streak Counter
+
+Progress Chart
+
+AI Coaching
+
+Example:
+
+"You completed your reading habit 18 days this month. Keep the streak."
+
+====================================================
+
+12. ANALYTICS SCREEN
+
+====================================================
+
+Screen:
+
+Productivity Intelligence
+
+Sections:
+
+Overview
+
+Focus Analysis
+
+Time Analysis
+
+Task Performance
+
+Goal Performance
+
+Habit Performance
+
+AI Recommendations
+
+----------------------------------------------------
+
+AI Report Example:
+
+"This month:
+
+You completed 82% of planned tasks.
+
+Your most productive period is 9 AM - 12 PM.
+
+Administrative tasks are frequently delayed."
+
+====================================================
+
+13. KNOWLEDGE CENTER
+
+====================================================
+
+Screen:
+
+Personal Knowledge Base
+
+Features:
+
+Notes
+
+Documents
+
+AI Summaries
+
+Search
+
+Categories
+
+Tags
+
+AI Functions:
+
+Summarize
+
+Extract Actions
+
+Generate Ideas
+
+Connect Knowledge
+
+====================================================
+
+14. SETTINGS EXPERIENCE
+
+====================================================
+
+Sections:
+
+Account
+
+Profile
+
+Appearance
+
+Notifications
+
+AI Preferences
+
+Privacy
+
+Security
+
+Subscription
+
+Integrations
+
+====================================================
+
+15. DESIGN SYSTEM FOUNDATION
+
+====================================================
+
+Create a complete scalable design system.
+
+====================================================
+
+COLOR SYSTEM
+
+====================================================
+
+Primary:
+
+Modern technology-inspired colors.
+
+Secondary:
+
+Professional productivity colors.
+
+Neutral:
+
+Clean workspace colors.
+
+Support:
+
+Success
+
+Warning
+
+Error
+
+Information
+
+The system must support:
+
+Light Mode
+
+Dark Mode
+
+====================================================
+
+TYPOGRAPHY
+
+====================================================
+
+Use modern readable fonts.
+
+Requirements:
+
+Excellent Arabic support.
+
+Excellent English support.
+
+Professional SaaS appearance.
+
+Recommended:
+
+Inter
+
+Plus Jakarta Sans
+
+Cairo (Arabic)
+
+====================================================
+
+COMPONENT LIBRARY
+
+====================================================
+
+Create reusable components:
+
+Buttons
+
+Inputs
+
+Forms
+
+Cards
+
+Tables
+
+Modals
+
+Dropdowns
+
+Tabs
+
+Navigation
+
+Sidebar
+
+Charts
+
+Notifications
+
+AI Cards
+
+Empty States
+
+Loading States
+
+Error States
+
+====================================================
+
+16. RESPONSIVE DESIGN
+
+====================================================
+
+Support:
+
+Desktop:
+
+1440px+
+
+Tablet:
+
+768px - 1439px
+
+Mobile:
+
+320px - 767px
+
+Mobile experience must not be a reduced desktop version.
+
+Design mobile-first where appropriate.
+
+====================================================
+
+17. ACCESSIBILITY
+
+====================================================
+
+Follow:
+
+WCAG 2.2 AA
+
+Requirements:
+
+Keyboard navigation
+
+Screen readers
+
+Proper contrast
+
+Semantic HTML
+
+Focus indicators
+
+====================================================
+
+18. UX QUALITY CHECKLIST
+
+====================================================
+
+Every screen must have:
+
+Purpose
+
+User Goal
+
+Primary Action
+
+Secondary Actions
+
+Loading State
+
+Empty State
+
+Error State
+
+Success Feedback
+
+Mobile Design
+
+Accessibility Review
+
+====================================================
+
+END OF PART 4
+
+====================================================
