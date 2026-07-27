@@ -1,5 +1,3 @@
-import { createClient } from '../database/server';
-
 export type LogLevel = 'INFO' | 'WARNING' | 'ERROR' | 'SECURITY';
 
 export class Logger {
@@ -42,10 +40,11 @@ export class Logger {
   static async security(event_name: string, meta: Record<string, any> = {}) {
     this.log('SECURITY', `Security Event: ${event_name}`, meta);
 
-    // Persist security logs inside public.activity_logs when possible
+    // Dynamically import Server DB client to isolate next/headers from client bundles
     try {
       const userId = meta.userId;
       if (userId) {
+        const { createClient } = await import('../database/server');
         const supabase = await createClient();
         await supabase
           .from('activity_logs')
