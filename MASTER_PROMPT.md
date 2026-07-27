@@ -9497,3 +9497,734 @@ Business:
 END OF PART 11
 
 ====================================================
+
+
+====================================================
+
+PART 12
+
+PRODUCT ROADMAP
+
+MVP EXECUTION PLAN
+
+& AI BUILD INSTRUCTIONS
+
+====================================================
+
+ROLE:
+
+Act as:
+
+- CTO of Cortex AI
+
+- Senior Product Manager
+
+- Lead Software Architect
+
+- AI Development Agent
+
+Your mission is to transform the complete Cortex AI specification into a production-ready SaaS platform.
+
+You must follow this document as the single source of truth.
+
+====================================================
+
+1. BUILDING PRINCIPLES
+
+====================================================
+
+Before writing any code:
+
+You MUST:
+
+1. Analyze requirements.
+
+2. Create technical implementation plan.
+
+3. Validate architecture decisions.
+
+4. Design database schema.
+
+5. Define API contracts.
+
+6. Create UI structure.
+
+7. Implement features incrementally.
+
+8. Test every module.
+
+9. Document every major decision.
+
+====================================================
+
+2. DEVELOPMENT APPROACH
+
+====================================================
+
+Follow:
+
+Agile Development
+
++
+
+Incremental Delivery
+
++
+
+Feature-Based Development
+
+The system must be built in controlled phases.
+
+====================================================
+
+3. PRODUCT DEVELOPMENT PHASES
+
+====================================================
+
+PHASE 0:
+
+PROJECT FOUNDATION
+
+Objectives:
+
+Create project infrastructure.
+
+Tasks:
+
+- Create GitHub repository
+
+- Configure Next.js
+
+- Configure TypeScript
+
+- Configure Tailwind
+
+- Configure shadcn/ui
+
+- Configure ESLint
+
+- Configure Prettier
+
+- Configure Git workflow
+
+- Configure CI/CD
+
+Deliverable:
+
+Clean production-ready project foundation.
+
+====================================================
+
+4. IMPLEMENTATION ORDER
+
+====================================================
+
+Build in this order:
+
+STEP 1:
+
+Project Setup
+
+STEP 2:
+
+Database Architecture
+
+STEP 3:
+
+Authentication
+
+STEP 4:
+
+User Management
+
+STEP 5:
+
+Core UI Layout
+
+STEP 6:
+
+Task Module
+
+STEP 7:
+
+AI Assistant
+
+STEP 8:
+
+Calendar
+
+STEP 9:
+
+Analytics
+
+STEP 10:
+
+Testing
+
+STEP 11:
+
+Deployment
+
+====================================================
+
+PHASE 1:
+
+MVP CORE PLATFORM
+
+Duration:
+
+Initial Release
+
+Goal:
+
+Create a usable AI productivity application.
+
+====================================================
+
+MVP FEATURES
+
+====================================================
+
+1. Authentication System
+
+Implement:
+
+- Registration
+
+- Login
+
+- Logout
+
+- Password Reset
+
+- Email Verification
+
+----------------------------------------------------
+
+2. User Profile
+
+Implement:
+
+- Profile Management
+
+- Preferences
+
+- Timezone
+
+- Language
+
+- Theme
+
+----------------------------------------------------
+
+3. Dashboard
+
+Create:
+
+- Daily Overview
+
+- Tasks Summary
+
+- Productivity Score
+
+- AI Suggestions
+
+----------------------------------------------------
+
+4. Smart Task Management
+
+Implement:
+
+- Create Tasks
+
+- Edit Tasks
+
+- Delete Tasks
+
+- Complete Tasks
+
+- Priorities
+
+- Deadlines
+
+- Categories
+
+----------------------------------------------------
+
+5. Basic AI Assistant
+
+Implement:
+
+User Conversation
+
+AI Response
+
+Basic Actions:
+
+- Create Task
+
+- Suggest Priority
+
+- Generate Simple Plan
+
+----------------------------------------------------
+
+6. Basic Calendar
+
+Implement:
+
+- Events
+
+- Task Scheduling
+
+- Daily View
+
+----------------------------------------------------
+
+7. Basic Analytics
+
+Implement:
+
+- Completed Tasks
+
+- Productivity Score
+
+- Weekly Summary
+
+====================================================
+
+MVP SUCCESS CRITERIA
+
+====================================================
+
+MVP is successful when:
+
+A user can:
+
+Create account
+
+↓
+
+Set goals
+
+↓
+
+Create tasks
+
+↓
+
+Ask AI for help
+
+↓
+
+Receive intelligent suggestions
+
+↓
+
+Track productivity
+
+====================================================
+
+PHASE 2:
+
+VERSION 1.0
+
+====================================================
+
+Goal:
+
+Transform MVP into intelligent productivity platform.
+
+Add:
+
+Advanced AI Planner
+
+Goal Management
+
+Habit Tracking
+
+Knowledge Center
+
+AI Reports
+
+Advanced Analytics
+
+Smart Notifications
+
+====================================================
+
+PHASE 3:
+
+VERSION 2.0
+
+====================================================
+
+Goal:
+
+Create collaborative productivity platform.
+
+Add:
+
+Teams
+
+Organizations
+
+Shared Projects
+
+Permissions
+
+Integrations
+
+Mobile Applications
+
+====================================================
+
+PHASE 4:
+
+VERSION 3.0
+
+====================================================
+
+Goal:
+
+Enterprise AI Productivity Ecosystem.
+
+Add:
+
+Enterprise Accounts
+
+Advanced Security
+
+AI Agents Marketplace
+
+Custom AI Assistants
+
+Enterprise Analytics
+
+API Platform
+
+====================================================
+
+5. AI AGENT BUILD RULES
+
+====================================================
+
+When acting as a coding AI agent:
+
+DO NOT:
+
+Create random code.
+
+Skip architecture planning.
+
+Ignore security.
+
+Hard-code values.
+
+Duplicate logic.
+
+Create unnecessary dependencies.
+
+====================================================
+
+ALWAYS:
+
+Use reusable components.
+
+Follow clean architecture.
+
+Write documented code.
+
+Create tests.
+
+Explain major decisions.
+
+Optimize performance.
+
+Consider scalability.
+
+====================================================
+
+6. CODE GENERATION RULES
+
+====================================================
+
+Every generated feature must include:
+
+Frontend:
+
+- Components
+
+- Pages
+
+- Hooks
+
+- Validation
+
+- Loading States
+
+- Error States
+
+Backend:
+
+- API Route
+
+- Service Layer
+
+- Validation
+
+- Database Operations
+
+- Error Handling
+
+Database:
+
+- Migration
+
+- Schema Update
+
+- Index Review
+
+Testing:
+
+- Unit Test
+
+- Integration Test
+
+Documentation:
+
+- Feature Description
+
+- Usage Instructions
+
+====================================================
+
+7. USER EXPERIENCE REQUIREMENTS
+
+====================================================
+
+Every feature must provide:
+
+Clear Purpose
+
+Simple Workflow
+
+Professional Interface
+
+Responsive Design
+
+Accessibility Support
+
+AI Assistance Where Useful
+
+====================================================
+
+8. PERFORMANCE REQUIREMENTS
+
+====================================================
+
+The application should achieve:
+
+Fast First Load
+
+Optimized Bundle Size
+
+Efficient Database Queries
+
+Low API Latency
+
+Optimized AI Requests
+
+====================================================
+
+9. SECURITY REQUIREMENTS
+
+====================================================
+
+Before every release verify:
+
+Authentication
+
+Authorization
+
+Data Protection
+
+API Security
+
+Input Validation
+
+Audit Logging
+
+Backup Strategy
+
+====================================================
+
+10. TESTING REQUIREMENTS
+
+====================================================
+
+Every major feature requires:
+
+Unit Testing
+
+Integration Testing
+
+User Flow Testing
+
+Security Testing
+
+Critical flows:
+
+Registration
+
+Login
+
+Task Creation
+
+AI Interaction
+
+Payment
+
+Data Export
+
+====================================================
+
+11. DOCUMENTATION REQUIREMENTS
+
+====================================================
+
+Maintain:
+
+README
+
+Architecture Documentation
+
+API Documentation
+
+Database Documentation
+
+Deployment Documentation
+
+User Documentation
+
+====================================================
+
+12. FINAL DEPLOYMENT PROCESS
+
+====================================================
+
+Production Release:
+
+1.
+
+Complete Development
+
+2.
+
+Run Automated Tests
+
+3.
+
+Perform Security Review
+
+4.
+
+Optimize Performance
+
+5.
+
+Deploy Database Changes
+
+6.
+
+Deploy Application
+
+7.
+
+Monitor System
+
+8.
+
+Collect User Feedback
+
+====================================================
+
+13. FINAL AI EXECUTION COMMAND
+
+====================================================
+
+START BUILDING CORTEX AI.
+
+Follow all previous specifications exactly.
+
+First:
+
+Analyze the complete architecture.
+
+Second:
+
+Create the implementation roadmap.
+
+Third:
+
+Initialize the project structure.
+
+Fourth:
+
+Create database schema.
+
+Fifth:
+
+Build authentication system.
+
+Sixth:
+
+Develop MVP modules.
+
+Seventh:
+
+Integrate AI capabilities.
+
+Eighth:
+
+Perform testing.
+
+Ninth:
+
+Deploy to production.
+
+Do not skip steps.
+
+Do not simplify architecture.
+
+Do not create a prototype only.
+
+Build a scalable SaaS product ready for real users.
+
+====================================================
+
+14. FINAL PROJECT DEFINITION
+
+====================================================
+
+Cortex AI is:
+
+A next-generation AI productivity operating system that helps individuals and teams transform goals into actions through intelligent planning, automation, and continuous productivity improvement.
+
+The final product must be:
+
+Modern.
+
+Secure.
+
+Scalable.
+
+AI-native.
+
+Production-ready.
+
+====================================================
+
+END OF MASTER PROMPT
+
+====================================================
