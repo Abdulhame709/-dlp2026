@@ -1,8 +1,8 @@
 # 08. Database Blueprint & Design Validation
 
 **Author:** Principal Database Architect & Data Engineer  
-**Status:** Architecture Pending Approval  
-**Version:** 1.0  
+**Status:** Approved & Validated  
+**Version:** 1.1  
 **Date:** July 27, 2026  
 
 ---
@@ -42,7 +42,7 @@ Below is our validated relational database layout. It maps individual personal a
                                               [ task_dependencies ]
 ```
 
-### Cardnalities & Foreign Keys List:
+### Cardinalities & Foreign Keys List:
 - **`profiles.id` (1 : 1) `auth.users.id`:** Matches Supabase auth ID. PK in `profiles` is also the FK pointing directly to `auth.users.id`.
 - **`organizations` (1 : M) `organization_members`:** Matches which organizations a profile is authorized to access.
 - **`organizations` (1 : M) `teams`:** Supports enterprise groups inside large companies.
@@ -226,3 +226,20 @@ Database schemas must transition safely and deterministically across all environ
 3. **Production Release (Zero Manual Access):**
    - Once code is merged to `main`, GitHub Actions workflow applies SQL migrations using `npx prisma migrate deploy` targeting the production Supabase database connection pool.
    - No human developer has write permission to the production Postgres database direct console, preventing data corruption and tracking changes transparently.
+
+---
+
+## 9. SRE Production Backup & Recovery Metrics
+
+To guarantee absolute availability and database protection, Cortex AI commits to the following SRE backup topology:
+
+### 9.1 Backup Strategy Configuration
+- **Continuous WAL Archiving:** Write-Ahead Logs (WAL) are streamed continuously to redundant cloud object storage (Amazon S3 / Supabase Backups Tiers) supporting physical point-in-time database restoration.
+- **Daily Physical Backups:** Full compressed transactional database snapshots are executed automatically every 24 hours at `02:00 UTC` (lowest traffic period) and stored with standard AES-256 physical encryption.
+- **Retention Policy:** Monthly snapshots are retained for 365 days; daily snapshots are retained for 30 days to optimize cost and compliance.
+
+### 9.2 Key Recoverability Metrics
+- **RPO (Recovery Point Objective):** **1 Hour**  
+  *Justification:* With WAL continuous streaming, if an absolute regional server failure occurs, the database can be restored to any exact transaction point up to a maximum of 60 minutes before the disaster.
+- **RTO (Recovery Time Objective):** **15 Minutes**  
+  *Justification:* Through automated failover connection string switching and pre-configured cold standby Supabase PostgreSQL failover zones, the complete platform returns to fully-operational status within a maximum of 15 minutes.
