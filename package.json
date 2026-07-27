@@ -18,7 +18,9 @@
     "test:ai": "npx tsx src/tests/ai-core-test.ts",
     "test:ai-ui": "npx tsx src/tests/ai-ui-test.ts",
     "test:saas": "npx tsx src/tests/saas-foundation-test.ts",
-    "test:ready": "npx tsx src/tests/production-readiness-test.ts"
+    "test:ready": "npx tsx src/tests/production-readiness-test.ts",
+    "test:live": "npx tsx src/tests/production-live-verification.ts",
+    "test:beta": "npx tsx src/tests/beta-launch-test.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
