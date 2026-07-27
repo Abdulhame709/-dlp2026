@@ -5192,3 +5192,1028 @@ Before implementation verify:
 END OF PART 6
 
 ====================================================
+
+
+====================================================
+
+PART 7
+
+API DESIGN & BACKEND SERVICES ARCHITECTURE
+
+====================================================
+
+ROLE:
+
+Act as a Senior Backend Architect and API Design Expert.
+
+Your responsibility is to design a complete, secure, scalable backend service architecture for Cortex AI.
+
+The backend must support:
+
+- Web Application
+
+- Mobile Applications
+
+- Third-party integrations
+
+- AI services
+
+- Enterprise environments
+
+====================================================
+
+1. API DESIGN PRINCIPLES
+
+====================================================
+
+All APIs must follow:
+
+1. RESTful Architecture
+
+2. Versioning Strategy
+
+3. Strong Type Validation
+
+4. Secure Authentication
+
+5. Consistent Error Handling
+
+6. Pagination Support
+
+7. Rate Limiting
+
+8. Logging
+
+9. Documentation
+
+10. Backward Compatibility
+
+====================================================
+
+2. API BASE STRUCTURE
+
+====================================================
+
+Base URL:
+
+/api/v1/
+
+Example:
+
+GET
+
+/api/v1/tasks
+
+POST
+
+/api/v1/projects
+
+PATCH
+
+/api/v1/goals/{id}
+
+====================================================
+
+3. API RESPONSE STANDARD
+
+====================================================
+
+All responses must follow:
+
+SUCCESS RESPONSE:
+
+{
+
+ status: "success",
+
+ data: {},
+
+ message: "",
+
+ timestamp: ""
+
+}
+
+ERROR RESPONSE:
+
+{
+
+ status: "error",
+
+ code: "",
+
+ message: "",
+
+ details: {},
+
+ timestamp: ""
+
+}
+
+====================================================
+
+4. AUTHENTICATION SERVICES
+
+====================================================
+
+Service:
+
+Authentication API
+
+Purpose:
+
+Manage identity, sessions, and security.
+
+Endpoints:
+
+POST
+
+/auth/register
+
+Function:
+
+Create new account.
+
+Request:
+
+{
+
+email,
+
+password,
+
+name
+
+}
+
+Response:
+
+{
+
+user,
+
+session
+
+}
+
+----------------------------------------------------
+
+POST
+
+/auth/login
+
+Function:
+
+Authenticate user.
+
+----------------------------------------------------
+
+POST
+
+/auth/logout
+
+Function:
+
+Terminate session.
+
+----------------------------------------------------
+
+POST
+
+/auth/forgot-password
+
+Function:
+
+Password recovery.
+
+----------------------------------------------------
+
+POST
+
+/auth/reset-password
+
+Function:
+
+Update password.
+
+----------------------------------------------------
+
+POST
+
+/auth/verify-email
+
+Function:
+
+Verify account.
+
+----------------------------------------------------
+
+Future:
+
+/auth/mfa
+
+Multi-factor authentication
+
+====================================================
+
+5. USER PROFILE API
+
+====================================================
+
+GET
+
+/users/profile
+
+Purpose:
+
+Retrieve current user profile.
+
+----------------------------------------------------
+
+PATCH
+
+/users/profile
+
+Purpose:
+
+Update user information.
+
+----------------------------------------------------
+
+GET
+
+/users/preferences
+
+Purpose:
+
+Retrieve personalization settings.
+
+----------------------------------------------------
+
+PATCH
+
+/users/preferences
+
+Purpose:
+
+Update:
+
+- Working hours
+
+- Theme
+
+- AI preferences
+
+- Notifications
+
+====================================================
+
+6. TASK MANAGEMENT API
+
+====================================================
+
+Service:
+
+Task Service
+
+Base:
+
+/tasks
+
+----------------------------------------------------
+
+GET
+
+/tasks
+
+Purpose:
+
+Retrieve tasks.
+
+Parameters:
+
+status
+
+priority
+
+project
+
+date
+
+search
+
+page
+
+limit
+
+----------------------------------------------------
+
+POST
+
+/tasks
+
+Purpose:
+
+Create task.
+
+Request:
+
+{
+
+title,
+
+description,
+
+priority,
+
+deadline,
+
+project_id
+
+}
+
+----------------------------------------------------
+
+GET
+
+/tasks/{id}
+
+Purpose:
+
+Retrieve task details.
+
+----------------------------------------------------
+
+PATCH
+
+/tasks/{id}
+
+Purpose:
+
+Update task.
+
+----------------------------------------------------
+
+DELETE
+
+/tasks/{id}
+
+Purpose:
+
+Archive task.
+
+----------------------------------------------------
+
+POST
+
+/tasks/{id}/complete
+
+Purpose:
+
+Complete task.
+
+----------------------------------------------------
+
+POST
+
+/tasks/{id}/duplicate
+
+Purpose:
+
+Create copy.
+
+====================================================
+
+7. AI TASK SERVICES
+
+====================================================
+
+Service:
+
+AI Task Intelligence
+
+Purpose:
+
+Allow AI to manage tasks.
+
+----------------------------------------------------
+
+POST
+
+/ai/tasks/generate
+
+Purpose:
+
+Generate tasks from natural language.
+
+Example Input:
+
+"I need to prepare a financial report within two weeks."
+
+AI Output:
+
+Project
+
+Tasks
+
+Timeline
+
+Priority
+
+----------------------------------------------------
+
+POST
+
+/ai/tasks/prioritize
+
+Purpose:
+
+Analyze task priority.
+
+----------------------------------------------------
+
+POST
+
+/ai/tasks/estimate-time
+
+Purpose:
+
+Estimate required time.
+
+====================================================
+
+8. PROJECT MANAGEMENT API
+
+====================================================
+
+Base:
+
+/projects
+
+----------------------------------------------------
+
+GET
+
+/projects
+
+Retrieve projects.
+
+----------------------------------------------------
+
+POST
+
+/projects
+
+Create project.
+
+----------------------------------------------------
+
+GET
+
+/projects/{id}
+
+Project details.
+
+----------------------------------------------------
+
+PATCH
+
+/projects/{id}
+
+Update project.
+
+----------------------------------------------------
+
+DELETE
+
+/projects/{id}
+
+Archive project.
+
+----------------------------------------------------
+
+POST
+
+/projects/{id}/members
+
+Add members.
+
+----------------------------------------------------
+
+GET
+
+/projects/{id}/analytics
+
+Retrieve project performance.
+
+====================================================
+
+9. GOALS API
+
+====================================================
+
+Base:
+
+/goals
+
+Endpoints:
+
+GET /goals
+
+POST /goals
+
+GET /goals/{id}
+
+PATCH /goals/{id}
+
+DELETE /goals/{id}
+
+----------------------------------------------------
+
+AI Goal Planning:
+
+POST
+
+/ai/goals/create-plan
+
+Input:
+
+Goal description
+
+Output:
+
+Milestones
+
+Projects
+
+Tasks
+
+Timeline
+
+====================================================
+
+10. HABITS API
+
+====================================================
+
+Base:
+
+/habits
+
+Endpoints:
+
+GET /habits
+
+POST /habits
+
+PATCH /habits/{id}
+
+DELETE /habits/{id}
+
+----------------------------------------------------
+
+Habit Tracking:
+
+POST
+
+/habits/{id}/check-in
+
+Purpose:
+
+Record daily completion.
+
+====================================================
+
+11. CALENDAR API
+
+====================================================
+
+Base:
+
+/calendar
+
+Endpoints:
+
+GET /calendar/events
+
+POST /calendar/events
+
+PATCH /calendar/events/{id}
+
+DELETE /calendar/events/{id}
+
+====================================================
+
+12. AI PLANNING ENGINE API
+
+====================================================
+
+This is the core intelligence service.
+
+Base:
+
+/ai/planner
+
+----------------------------------------------------
+
+POST
+
+/ai/planner/daily-plan
+
+Purpose:
+
+Generate daily schedule.
+
+Input:
+
+Available Time
+
+Tasks
+
+Goals
+
+Calendar
+
+Output:
+
+Optimized Daily Plan
+
+----------------------------------------------------
+
+POST
+
+/ai/planner/reschedule
+
+Purpose:
+
+Automatically rebuild schedule after changes.
+
+----------------------------------------------------
+
+POST
+
+/ai/planner/analyze-day
+
+Purpose:
+
+Analyze completed day.
+
+====================================================
+
+13. AI ASSISTANT API
+
+====================================================
+
+Base:
+
+/ai/assistant
+
+POST
+
+/chat
+
+Purpose:
+
+Main AI conversation endpoint.
+
+Request:
+
+{
+
+message,
+
+conversation_id
+
+}
+
+Response:
+
+{
+
+reply,
+
+actions,
+
+recommendations
+
+}
+
+----------------------------------------------------
+
+AI Actions:
+
+CREATE_TASK
+
+CREATE_PROJECT
+
+CREATE_EVENT
+
+GENERATE_REPORT
+
+ANALYZE_PRODUCTIVITY
+
+====================================================
+
+14. ANALYTICS API
+
+====================================================
+
+Base:
+
+/analytics
+
+Endpoints:
+
+GET
+
+/analytics/dashboard
+
+Returns:
+
+Productivity Score
+
+Completed Tasks
+
+Focus Time
+
+Goals Progress
+
+----------------------------------------------------
+
+GET
+
+/analytics/productivity-report
+
+Returns:
+
+Weekly/Monthly AI Report
+
+====================================================
+
+15. KNOWLEDGE CENTER API
+
+====================================================
+
+Base:
+
+/knowledge
+
+Endpoints:
+
+GET /notes
+
+POST /notes
+
+PATCH /notes/{id}
+
+DELETE /notes/{id}
+
+----------------------------------------------------
+
+AI Knowledge Features:
+
+POST
+
+/ai/summarize
+
+POST
+
+/ai/extract-actions
+
+POST
+
+/ai/search
+
+====================================================
+
+16. NOTIFICATION API
+
+====================================================
+
+Base:
+
+/notifications
+
+Endpoints:
+
+GET /notifications
+
+PATCH /notifications/{id}/read
+
+----------------------------------------------------
+
+Internal Services:
+
+Notification Worker
+
+Responsible for:
+
+- Push Notifications
+
+- Email
+
+- In-App Alerts
+
+====================================================
+
+17. SUBSCRIPTION API
+
+====================================================
+
+Base:
+
+/billing
+
+Endpoints:
+
+GET /plans
+
+POST /subscribe
+
+GET /subscription
+
+POST /cancel
+
+====================================================
+
+18. ADMIN API
+
+====================================================
+
+Base:
+
+/admin
+
+Features:
+
+User Management
+
+Subscription Management
+
+System Analytics
+
+AI Usage Monitoring
+
+Security Logs
+
+Audit Review
+
+====================================================
+
+19. API SECURITY
+
+====================================================
+
+Implement:
+
+Authentication Middleware
+
+Authorization Middleware
+
+Input Validation
+
+Rate Limiting
+
+Request Logging
+
+IP Monitoring
+
+API Key Management
+
+Data Encryption
+
+====================================================
+
+20. ERROR HANDLING
+
+====================================================
+
+Standard Error Codes:
+
+400
+
+Bad Request
+
+401
+
+Unauthorized
+
+403
+
+Forbidden
+
+404
+
+Not Found
+
+409
+
+Conflict
+
+422
+
+Validation Error
+
+429
+
+Too Many Requests
+
+500
+
+Server Error
+
+====================================================
+
+21. API DOCUMENTATION
+
+====================================================
+
+Generate:
+
+OpenAPI Specification
+
+Swagger Documentation
+
+API Examples
+
+Authentication Guide
+
+Developer Guide
+
+====================================================
+
+22. BACKEND SERVICES STRUCTURE
+
+====================================================
+
+Recommended structure:
+
+src/
+
+modules/
+
+auth/
+
+users/
+
+tasks/
+
+projects/
+
+goals/
+
+calendar/
+
+ai/
+
+analytics/
+
+notifications/
+
+billing/
+
+admin/
+
+Each module contains:
+
+controller
+
+service
+
+repository
+
+schema
+
+types
+
+tests
+
+====================================================
+
+23. BACKEND QUALITY CHECKLIST
+
+====================================================
+
+Before implementation:
+
+✓ All APIs documented
+
+✓ Security rules defined
+
+✓ Validation implemented
+
+✓ Error handling standardized
+
+✓ Rate limits configured
+
+✓ Logging enabled
+
+✓ Testing strategy prepared
+
+✓ Future mobile support confirmed
+
+====================================================
+
+END OF PART 7
+
+====================================================
