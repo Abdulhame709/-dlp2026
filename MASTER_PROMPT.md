@@ -1218,3 +1218,960 @@ Does this create competitive advantage?
 END OF PART 2
 
 ====================================================
+
+
+====================================================
+
+PART 3
+
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+====================================================
+
+ROLE:
+
+Act as a Senior Product Manager and Solution Architect.
+
+Your responsibility is to define the complete product requirements for Cortex AI.
+
+The objective is to transform the product vision into a clear implementation blueprint.
+
+Every requirement must be:
+
+- Specific
+
+- Measurable
+
+- Testable
+
+- Scalable
+
+- User-focused
+
+====================================================
+
+1. PRODUCT OVERVIEW
+
+====================================================
+
+Product:
+
+Cortex AI
+
+Category:
+
+AI Productivity Operating System
+
+Primary Goal:
+
+Enable users to achieve goals faster by combining artificial intelligence, task management, planning, analytics, and personal productivity intelligence into one ecosystem.
+
+The system should help users move through this journey:
+
+Idea
+
+↓
+
+Goal
+
+↓
+
+Plan
+
+↓
+
+Tasks
+
+↓
+
+Execution
+
+↓
+
+Analysis
+
+↓
+
+Improvement
+
+====================================================
+
+2. CORE PRODUCT MODULES
+
+====================================================
+
+Cortex AI consists of the following major modules:
+
+MODULE 1:
+
+AI Executive Assistant
+
+MODULE 2:
+
+Smart Task Management
+
+MODULE 3:
+
+Project Management
+
+MODULE 4:
+
+AI Planning Engine
+
+MODULE 5:
+
+Smart Calendar
+
+MODULE 6:
+
+Goals Management
+
+MODULE 7:
+
+Habit Tracking
+
+MODULE 8:
+
+Productivity Analytics
+
+MODULE 9:
+
+Knowledge Management
+
+MODULE 10:
+
+Notifications System
+
+MODULE 11:
+
+User Profile & Personalization
+
+MODULE 12:
+
+Team Collaboration
+
+MODULE 13:
+
+Subscription & Billing
+
+MODULE 14:
+
+Administration Dashboard
+
+====================================================
+
+MODULE 1:
+
+AI EXECUTIVE ASSISTANT
+
+====================================================
+
+Purpose:
+
+Create an intelligent assistant that understands user objectives and helps manage productivity.
+
+Core Features:
+
+1. Conversational AI Interface
+
+The user can communicate naturally.
+
+Examples:
+
+"I need to prepare a business report next week."
+
+"I have three meetings tomorrow."
+
+"Help me organize my study plan."
+
+The AI should understand:
+
+- Intent
+
+- Priority
+
+- Deadline
+
+- Context
+
+- Required actions
+
+----------------------------------------------------
+
+2. AI Task Creation
+
+The AI can create tasks automatically.
+
+Example:
+
+Input:
+
+"I want to finish my annual audit report within 10 days."
+
+Output:
+
+Project:
+
+Annual Audit Report
+
+Tasks:
+
+- Collect financial documents
+
+- Review previous reports
+
+- Analyze findings
+
+- Prepare recommendations
+
+- Final review
+
+----------------------------------------------------
+
+3. AI Recommendations
+
+The AI should recommend:
+
+- Next action
+
+- Priority changes
+
+- Schedule adjustments
+
+- Productivity improvements
+
+----------------------------------------------------
+
+4. AI Memory System
+
+The AI should remember user preferences:
+
+Examples:
+
+Preferred working hours
+
+Favorite planning style
+
+Common tasks
+
+Goals
+
+Projects
+
+The user must have control over memory.
+
+Features:
+
+- View memory
+
+- Edit memory
+
+- Delete memory
+
+- Disable memory
+
+====================================================
+
+MODULE 2:
+
+SMART TASK MANAGEMENT
+
+====================================================
+
+Purpose:
+
+Provide an intelligent alternative to traditional task lists.
+
+Task Entity:
+
+Each task contains:
+
+Title
+
+Description
+
+Priority
+
+Status
+
+Category
+
+Project
+
+Goal
+
+Due Date
+
+Start Date
+
+Estimated Time
+
+Actual Time
+
+Tags
+
+Attachments
+
+Comments
+
+Dependencies
+
+Created Date
+
+Updated Date
+
+----------------------------------------------------
+
+Task Status:
+
+Default:
+
+Inbox
+
+Planned
+
+In Progress
+
+Waiting
+
+Completed
+
+Archived
+
+----------------------------------------------------
+
+Priority Levels:
+
+Critical
+
+High
+
+Medium
+
+Low
+
+----------------------------------------------------
+
+Smart Features:
+
+AI Priority Prediction
+
+AI Time Estimation
+
+Automatic Categorization
+
+Duplicate Detection
+
+Recurring Tasks
+
+Task Templates
+
+Bulk Actions
+
+Task Search
+
+Task Filtering
+
+====================================================
+
+MODULE 3:
+
+PROJECT MANAGEMENT
+
+====================================================
+
+Purpose:
+
+Allow users to manage large objectives.
+
+Project Structure:
+
+Project
+
+↓
+
+Milestones
+
+↓
+
+Tasks
+
+↓
+
+Subtasks
+
+----------------------------------------------------
+
+Project Features:
+
+Create Project
+
+Edit Project
+
+Archive Project
+
+Project Dashboard
+
+Progress Tracking
+
+Deadline Tracking
+
+Team Members
+
+Project Notes
+
+Files
+
+Activity History
+
+----------------------------------------------------
+
+Project Analytics:
+
+Completion Percentage
+
+Remaining Tasks
+
+Time Spent
+
+Delayed Tasks
+
+Productivity Trend
+
+====================================================
+
+MODULE 4:
+
+AI PLANNING ENGINE
+
+====================================================
+
+Purpose:
+
+The brain of Cortex AI.
+
+The engine analyzes:
+
+User Goals
+
+Tasks
+
+Deadlines
+
+Calendar
+
+Available Time
+
+Work Patterns
+
+Energy Levels
+
+Then creates optimized plans.
+
+----------------------------------------------------
+
+Daily Planning:
+
+Every morning:
+
+AI generates:
+
+Today's Priority Tasks
+
+Recommended Schedule
+
+Focus Sessions
+
+Warnings
+
+Suggestions
+
+----------------------------------------------------
+
+Automatic Rescheduling:
+
+When a task is missed:
+
+The AI should:
+
+Analyze impact
+
+Recalculate schedule
+
+Suggest alternatives
+
+Example:
+
+"Your report task was delayed by 2 days. I recommend moving the research task to Thursday and extending the final review deadline."
+
+====================================================
+
+MODULE 5:
+
+SMART CALENDAR
+
+====================================================
+
+Purpose:
+
+Connect time with execution.
+
+Features:
+
+Day View
+
+Week View
+
+Month View
+
+Calendar Events:
+
+Meetings
+
+Tasks
+
+Focus Sessions
+
+Reminders
+
+----------------------------------------------------
+
+AI Calendar Features:
+
+Smart Scheduling
+
+Conflict Detection
+
+Time Blocking
+
+Meeting Optimization
+
+Focus Time Protection
+
+====================================================
+
+MODULE 6:
+
+GOALS MANAGEMENT
+
+====================================================
+
+Purpose:
+
+Transform ambitions into measurable execution plans.
+
+Goal Structure:
+
+Goal
+
+↓
+
+Objectives
+
+↓
+
+Milestones
+
+↓
+
+Projects
+
+↓
+
+Tasks
+
+----------------------------------------------------
+
+Goal Features:
+
+Create Goal
+
+Goal Category
+
+Deadline
+
+Progress
+
+Milestones
+
+AI Planning
+
+Goal Analytics
+
+Example:
+
+Goal:
+
+Learn Programming
+
+AI creates:
+
+Milestone 1:
+
+Programming Fundamentals
+
+Milestone 2:
+
+Web Development
+
+Milestone 3:
+
+Build Real Projects
+
+====================================================
+
+MODULE 7:
+
+HABIT TRACKING
+
+====================================================
+
+Purpose:
+
+Help users build consistent behaviors.
+
+Features:
+
+Create Habit
+
+Daily Tracking
+
+Habit Streaks
+
+Statistics
+
+Reminders
+
+AI Recommendations
+
+Examples:
+
+Reading
+
+Exercise
+
+Learning
+
+Meditation
+
+Sleep Routine
+
+====================================================
+
+MODULE 8:
+
+PRODUCTIVITY ANALYTICS
+
+====================================================
+
+Purpose:
+
+Provide intelligence about user performance.
+
+Dashboard Metrics:
+
+Productivity Score
+
+Task Completion Rate
+
+Focus Time
+
+Deep Work Hours
+
+Goal Progress
+
+Habit Consistency
+
+Time Distribution
+
+----------------------------------------------------
+
+AI Weekly Report:
+
+Example:
+
+"This week you completed 87% of planned tasks."
+
+"Your highest productivity time was between 9 AM and 12 PM."
+
+"You frequently postpone administrative tasks."
+
+====================================================
+
+MODULE 9:
+
+KNOWLEDGE MANAGEMENT
+
+====================================================
+
+Purpose:
+
+Create a personal knowledge system.
+
+Features:
+
+Notes
+
+Documents
+
+Bookmarks
+
+Ideas
+
+AI Summaries
+
+AI Search
+
+Knowledge Categories
+
+----------------------------------------------------
+
+AI Capabilities:
+
+Summarize notes
+
+Extract actions
+
+Generate insights
+
+Connect related information
+
+====================================================
+
+MODULE 10:
+
+NOTIFICATION SYSTEM
+
+====================================================
+
+Features:
+
+Push Notifications
+
+Email Notifications
+
+In-App Notifications
+
+Smart Notifications:
+
+Instead of:
+
+"You have a task."
+
+Use:
+
+"You have 45 minutes available now. This is the ideal time to complete your pending analysis task."
+
+====================================================
+
+MODULE 11:
+
+PERSONALIZATION
+
+====================================================
+
+The system should adapt to users.
+
+Settings:
+
+Language
+
+Timezone
+
+Theme
+
+Working Hours
+
+Planning Style
+
+Notification Preferences
+
+AI Behavior Preferences
+
+====================================================
+
+MODULE 12:
+
+TEAM COLLABORATION
+
+====================================================
+
+Future Module.
+
+Features:
+
+Organizations
+
+Teams
+
+Shared Projects
+
+Roles
+
+Permissions
+
+Comments
+
+Activity Feed
+
+Team Analytics
+
+====================================================
+
+MODULE 13:
+
+SUBSCRIPTION SYSTEM
+
+====================================================
+
+Plans:
+
+FREE
+
+PRO
+
+BUSINESS
+
+ENTERPRISE
+
+Features:
+
+Subscription Management
+
+Payment Integration
+
+Invoices
+
+Usage Limits
+
+AI Credit System
+
+====================================================
+
+MODULE 14:
+
+ADMIN DASHBOARD
+
+====================================================
+
+Administration Features:
+
+User Management
+
+Content Management
+
+Subscription Management
+
+Analytics
+
+System Settings
+
+Security Logs
+
+Audit Logs
+
+AI Usage Monitoring
+
+====================================================
+
+3. MVP SCOPE
+
+====================================================
+
+Version MVP must include:
+
+Authentication
+
+User Profile
+
+Dashboard
+
+Tasks
+
+Projects
+
+AI Assistant Basic Version
+
+AI Task Creation
+
+Calendar
+
+Basic Analytics
+
+Notifications
+
+Settings
+
+====================================================
+
+4. VERSION ROADMAP
+
+====================================================
+
+VERSION 1:
+
+Add:
+
+Advanced AI Planning
+
+Goals
+
+Habits
+
+Knowledge Base
+
+Advanced Analytics
+
+----------------------------------------------------
+
+VERSION 2:
+
+Add:
+
+Teams
+
+Collaboration
+
+Integrations
+
+Mobile Applications
+
+----------------------------------------------------
+
+VERSION 3:
+
+Add:
+
+Enterprise Features
+
+AI Agents
+
+Marketplace
+
+Advanced Automation
+
+====================================================
+
+5. PRODUCT SUCCESS CRITERIA
+
+====================================================
+
+The product is successful when users can:
+
+- Create goals easily
+
+- Automatically generate plans
+
+- Complete more tasks
+
+- Understand productivity patterns
+
+- Reduce manual planning
+
+- Build consistent habits
+
+====================================================
+
+END OF PART 3
+
+====================================================
