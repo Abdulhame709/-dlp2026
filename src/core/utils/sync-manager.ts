@@ -1,4 +1,4 @@
-interface PendingOperation {
+export interface PendingOperation {
   id: string;
   action: 'CREATE' | 'UPDATE' | 'DELETE' | 'COMPLETE';
   entityType: 'TASK' | 'PROJECT' | 'GOAL';
@@ -7,43 +7,109 @@ interface PendingOperation {
 }
 
 export class SyncManager {
-  private static queueKey = 'cortex_pending_sync_queue';
+  private static dbName = 'cortex_offline_db';
+  private static storeName = 'pending_operations';
+  private static dbVersion = 1;
 
   /**
-   * Add a mutation to the local offline synchronization queue
+   * Safe asynchronous IndexedDB opener
    */
-  static queueOperation(action: 'CREATE' | 'UPDATE' | 'DELETE' | 'COMPLETE', entityType: 'TASK' | 'PROJECT' | 'GOAL', payload: any): void {
-    if (typeof window === 'undefined') return;
+  private static openDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      if (typeof window === 'undefined' || !window.indexedDB) {
+        reject(new Error('IndexedDB is not supported on this environment.'));
+        return;
+      }
 
-    const queue = this.getQueue();
-    const newOp: PendingOperation = {
-      id: `sync-op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      action,
-      entityType,
-      payload,
-      timestamp: Date.now(),
-    };
+      const request = window.indexedDB.open(this.dbName, this.dbVersion);
 
-    queue.push(newOp);
-    localStorage.setItem(this.queueKey, JSON.stringify(queue));
-    console.log(`🔌 Sync Manager [Offline Queued]: ${action} on ${entityType}`, payload);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName, { keyPath: 'id' });
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
   }
 
   /**
-   * Fetch current queued pending sync operations
+   * Queue a database mutation asynchronously in IndexedDB
    */
-  static getQueue(): PendingOperation[] {
+  static async queueOperation(
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'COMPLETE',
+    entityType: 'TASK' | 'PROJECT' | 'GOAL',
+    payload: any
+  ): Promise<void> {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const db = await this.openDB();
+      const transaction = db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+
+      const newOp: PendingOperation = {
+        id: `sync-op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        action,
+        entityType,
+        payload,
+        timestamp: Date.now(),
+      };
+
+      await new Promise<void>((resolve, reject) => {
+        const request = store.add(newOp);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+
+      console.log(`🔌 Sync Manager [IndexedDB Queued]: ${action} on ${entityType}`, payload);
+    } catch (err: any) {
+      console.warn('SyncManager IndexedDB queuing failed:', err.message);
+    }
+  }
+
+  /**
+   * Fetch all queued pending operations from IndexedDB
+   */
+  static async getQueue(): Promise<PendingOperation[]> {
     if (typeof window === 'undefined') return [];
-    const data = localStorage.getItem(this.queueKey);
-    return data ? JSON.parse(data) : [];
+
+    try {
+      const db = await this.openDB();
+      const transaction = db.transaction(this.storeName, 'readonly');
+      const store = transaction.objectStore(this.storeName);
+
+      return await new Promise<PendingOperation[]>((resolve, reject) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    } catch {
+      return [];
+    }
   }
 
   /**
-   * Clear the local synchronization queue
+   * Clear the IndexedDB queue
    */
-  static clearQueue(): void {
+  static async clearQueue(): Promise<void> {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(this.queueKey);
+
+    try {
+      const db = await this.openDB();
+      const transaction = db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+
+      await new Promise<void>((resolve, reject) => {
+        const request = store.clear();
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    } catch (err: any) {
+      console.warn('SyncManager clear queue failed:', err.message);
+    }
   }
 
   /**
@@ -57,18 +123,23 @@ export class SyncManager {
   /**
    * Run background synchronization of all queued tasks when online
    */
-  static async syncPendingOperations(executeSyncHook: (op: PendingOperation) => Promise<boolean>): Promise<boolean> {
+  static async syncPendingOperations(
+    executeSyncHook: (op: PendingOperation) => Promise<boolean>
+  ): Promise<boolean> {
     if (!this.isOnline()) {
       console.log('🔌 Sync Manager: Browser is offline. Skipping sync routine.');
       return false;
     }
 
-    const queue = this.getQueue();
+    const queue = await this.getQueue();
     if (queue.length === 0) {
       return true;
     }
 
-    console.log(`🔌 Sync Manager: Synchronizing ${queue.length} pending operations in background...`);
+    console.log(`🔌 Sync Manager: Synchronizing ${queue.length} pending operations inside IndexedDB...`);
+    
+    // Clear queue before syncing, re-adding any failed operations back
+    await this.clearQueue();
     const remainingOps: PendingOperation[] = [];
 
     for (const op of queue) {
@@ -83,14 +154,21 @@ export class SyncManager {
       }
     }
 
-    localStorage.setItem(this.queueKey, JSON.stringify(remainingOps));
+    // Re-save any failed syncs
+    if (remainingOps.length > 0) {
+      const db = await this.openDB();
+      const transaction = db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      for (const op of remainingOps) {
+        store.add(op);
+      }
+    }
     
     if (remainingOps.length === 0) {
-      console.log('🔌 Sync Manager: All offline mutations synchronized successfully!');
+      console.log('🔌 Sync Manager: All IndexedDB offline mutations synchronized successfully!');
       return true;
     }
 
     return false;
   }
 }
-export type { PendingOperation };

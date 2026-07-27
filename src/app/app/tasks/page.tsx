@@ -147,7 +147,7 @@ export default function TasksPage() {
     setNewDesc('');
 
     if (!SyncManager.isOnline()) {
-      SyncManager.queueOperation('CREATE', 'TASK', payload);
+      await SyncManager.queueOperation('CREATE', 'TASK', payload);
       return;
     }
 
@@ -176,7 +176,7 @@ export default function TasksPage() {
       }
 
       if (!SyncManager.isOnline()) {
-        SyncManager.queueOperation('UPDATE', 'TASK', { id: taskId, status: targetStatus });
+        await SyncManager.queueOperation('UPDATE', 'TASK', { id: taskId, status: targetStatus });
         return;
       }
 
@@ -194,7 +194,7 @@ export default function TasksPage() {
     if (selectedTask?.id === taskId) setSelectedTask(null);
 
     if (!SyncManager.isOnline()) {
-      SyncManager.queueOperation('DELETE', 'TASK', { id: taskId });
+      await SyncManager.queueOperation('DELETE', 'TASK', { id: taskId });
       return;
     }
 

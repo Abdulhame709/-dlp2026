@@ -127,7 +127,6 @@ export class SupabaseTaskRepository implements ITaskRepository {
     if (updateData.estimatedDuration !== undefined) dbRow.estimated_duration = updateData.estimatedDuration;
     if (updateData.actualDuration !== undefined) dbRow.actual_duration = updateData.actualDuration;
     if (updateData.completedAt !== undefined) dbRow.completed_at = updateData.completedAt ? updateData.completedAt.toISOString() : null;
-    if (updateData.updatedBy !== undefined) dbRow.updated_by = updateData.updatedBy;
 
     const { data, error } = await supabase
       .from('tasks')
