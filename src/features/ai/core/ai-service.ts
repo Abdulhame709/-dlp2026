@@ -25,10 +25,10 @@ export class AIService {
     
     // 1. Basic Prompt Injection and system prompt leak protections
     const injectionKeywords = [
-      'ignore previous instructions',
+      'ignore previous',
       'system prompt',
       'you are now a',
-      'bypass constraints',
+      'bypass',
       'reveal your developer key',
     ];
 
