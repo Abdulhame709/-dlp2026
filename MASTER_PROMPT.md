@@ -7106,3 +7106,788 @@ Before production:
 END OF PART 8
 
 ====================================================
+
+
+====================================================
+
+PART 9
+
+SECURITY, PRIVACY & COMPLIANCE ARCHITECTURE
+
+====================================================
+
+ROLE:
+
+Act as:
+
+- Chief Information Security Officer (CISO)
+
+- Application Security Architect
+
+- Cloud Security Engineer
+
+- Privacy Compliance Specialist
+
+Your responsibility is to design a complete enterprise-grade security architecture for Cortex AI.
+
+The security strategy must protect:
+
+- User accounts
+
+- Personal information
+
+- Business information
+
+- AI conversations
+
+- Uploaded files
+
+- Productivity data
+
+- Payment information
+
+Security must follow:
+
+"Security by Design"
+
+Meaning:
+
+Security requirements must be implemented from the beginning of development, not added after launch.
+
+====================================================
+
+1. SECURITY OBJECTIVES
+
+====================================================
+
+The system must guarantee:
+
+1. Confidentiality
+
+Only authorized users can access information.
+
+2. Integrity
+
+Data cannot be modified without authorization.
+
+3. Availability
+
+The platform remains reliable and accessible.
+
+4. Privacy
+
+Users control their own information.
+
+5. Accountability
+
+Important actions are recorded and traceable.
+
+====================================================
+
+2. SECURITY ARCHITECTURE OVERVIEW
+
+====================================================
+
+Security layers:
+
+User Layer
+
+↓
+
+Authentication Layer
+
+↓
+
+Authorization Layer
+
+↓
+
+Application Security Layer
+
+↓
+
+Database Security Layer
+
+↓
+
+Infrastructure Security Layer
+
+↓
+
+Monitoring Layer
+
+====================================================
+
+3. AUTHENTICATION SECURITY
+
+====================================================
+
+Authentication system must support:
+
+Email and Password
+
+OAuth Providers:
+
+Google
+
+Microsoft
+
+Apple
+
+Future:
+
+Enterprise SSO
+
+----------------------------------------------------
+
+Password Requirements:
+
+Minimum 8 characters
+
+Password strength validation
+
+Secure hashing
+
+Password history protection
+
+----------------------------------------------------
+
+Password Storage:
+
+Never store plain passwords.
+
+Use:
+
+Argon2id
+
+or
+
+bcrypt
+
+with secure parameters.
+
+====================================================
+
+4. SESSION MANAGEMENT
+
+====================================================
+
+Implement:
+
+Secure Sessions
+
+Token Expiration
+
+Refresh Tokens
+
+Device Management
+
+Session Revocation
+
+Users must be able to:
+
+View active sessions
+
+Logout from devices
+
+Terminate suspicious sessions
+
+====================================================
+
+5. MULTI-FACTOR AUTHENTICATION (MFA)
+
+====================================================
+
+Future-ready architecture.
+
+Support:
+
+Authenticator Apps
+
+Email Verification Codes
+
+Security Keys
+
+MFA should be available for:
+
+Premium Users
+
+Administrators
+
+Enterprise Accounts
+
+====================================================
+
+6. AUTHORIZATION SYSTEM
+
+====================================================
+
+Implement:
+
+RBAC
+
+(Role Based Access Control)
+
+and future:
+
+ABAC
+
+(Attribute Based Access Control)
+
+====================================================
+
+ROLES
+
+====================================================
+
+Individual User
+
+Premium User
+
+Team Member
+
+Team Manager
+
+Organization Admin
+
+Enterprise Admin
+
+System Administrator
+
+====================================================
+
+PERMISSION TYPES
+
+====================================================
+
+CREATE
+
+READ
+
+UPDATE
+
+DELETE
+
+MANAGE
+
+EXPORT
+
+BILLING_ACCESS
+
+USER_MANAGEMENT
+
+====================================================
+
+7. DATABASE SECURITY
+
+====================================================
+
+Database security must include:
+
+Supabase Row Level Security (RLS)
+
+Principle:
+
+Users can only access their own records.
+
+Examples:
+
+User A cannot view User B tasks.
+
+Team members only access assigned workspace data.
+
+Administrators access according to permissions.
+
+====================================================
+
+8. DATA ENCRYPTION
+
+====================================================
+
+Encryption must be applied:
+
+----------------------------------------------------
+
+Data In Transit:
+
+Use:
+
+HTTPS
+
+TLS 1.3
+
+----------------------------------------------------
+
+Data At Rest:
+
+Encrypt:
+
+Database Storage
+
+Files
+
+Backups
+
+----------------------------------------------------
+
+Sensitive Data:
+
+Encrypt:
+
+Personal Information
+
+AI Memory
+
+Private Documents
+
+Payment Information
+
+====================================================
+
+9. API SECURITY
+
+====================================================
+
+All APIs must implement:
+
+Authentication Middleware
+
+Authorization Middleware
+
+Input Validation
+
+Rate Limiting
+
+Request Monitoring
+
+Secure Headers
+
+====================================================
+
+10. INPUT VALIDATION & PROTECTION
+
+====================================================
+
+Protect against:
+
+SQL Injection
+
+XSS
+
+CSRF
+
+Command Injection
+
+File Upload Attacks
+
+Data Manipulation
+
+Implementation:
+
+Use:
+
+Schema Validation
+
+Parameterized Queries
+
+Content Sanitization
+
+====================================================
+
+11. OWASP SECURITY REQUIREMENTS
+
+====================================================
+
+Follow:
+
+OWASP Top 10 Security Risks
+
+Including:
+
+Broken Access Control
+
+Cryptographic Failures
+
+Injection
+
+Insecure Design
+
+Security Misconfiguration
+
+Vulnerable Components
+
+Authentication Failures
+
+Software Integrity Failures
+
+Logging Failures
+
+Server-Side Request Forgery
+
+====================================================
+
+12. FILE SECURITY
+
+====================================================
+
+Uploaded files must have:
+
+File Type Validation
+
+File Size Limits
+
+Virus Scanning
+
+Secure Storage
+
+Access Control
+
+Temporary Download URLs
+
+Forbidden:
+
+Executable Uploads
+
+Unsafe File Types
+
+====================================================
+
+13. AI SECURITY
+
+====================================================
+
+AI systems require additional protection.
+
+Implement:
+
+Prompt Injection Protection
+
+Data Leakage Prevention
+
+AI Output Validation
+
+Sensitive Information Filtering
+
+Model Access Control
+
+====================================================
+
+AI MEMORY SECURITY
+
+====================================================
+
+The user must control:
+
+View Memory
+
+Delete Memory
+
+Disable Memory
+
+Export Memory
+
+Never store sensitive information without user permission.
+
+====================================================
+
+14. PRIVACY ARCHITECTURE
+
+====================================================
+
+Users must have:
+
+Privacy Dashboard
+
+Data Controls
+
+Consent Management
+
+Features:
+
+Download My Data
+
+Delete My Account
+
+Export Information
+
+Manage AI Memory
+
+====================================================
+
+15. DATA RETENTION POLICY
+
+====================================================
+
+Define retention periods for:
+
+Account Data
+
+AI Conversations
+
+Logs
+
+Files
+
+Analytics Data
+
+Users should understand:
+
+What is stored
+
+Why it is stored
+
+How long it is stored
+
+====================================================
+
+16. AUDIT LOGGING
+
+====================================================
+
+Record important events:
+
+Authentication Attempts
+
+Password Changes
+
+Permission Changes
+
+Data Export
+
+Data Deletion
+
+Subscription Changes
+
+Administrative Actions
+
+Audit Log Fields:
+
+User ID
+
+Action
+
+Entity
+
+Timestamp
+
+IP Address
+
+Device Information
+
+====================================================
+
+17. MONITORING & ALERTING
+
+====================================================
+
+Implement:
+
+Application Monitoring
+
+Security Monitoring
+
+Error Tracking
+
+Performance Monitoring
+
+Detect:
+
+Failed Login Attempts
+
+Suspicious Activities
+
+Unusual API Usage
+
+Data Access Anomalies
+
+====================================================
+
+18. BACKUP & DISASTER RECOVERY
+
+====================================================
+
+Implement:
+
+Automated Backups
+
+Backup Encryption
+
+Recovery Testing
+
+Disaster Recovery Plan
+
+Recovery Objectives:
+
+RPO:
+
+Maximum acceptable data loss
+
+RTO:
+
+Maximum acceptable downtime
+
+====================================================
+
+19. CLOUD SECURITY
+
+====================================================
+
+Infrastructure:
+
+Frontend:
+
+Vercel
+
+Database:
+
+Supabase
+
+Repository:
+
+GitHub
+
+Security Requirements:
+
+Environment Variables Protection
+
+Secret Management
+
+Access Control
+
+Deployment Protection
+
+====================================================
+
+20. DEVELOPMENT SECURITY
+
+====================================================
+
+Development workflow must include:
+
+Code Reviews
+
+Dependency Scanning
+
+Secret Detection
+
+Security Testing
+
+Static Analysis
+
+Never commit:
+
+API Keys
+
+Passwords
+
+Database Credentials
+
+Private Tokens
+
+====================================================
+
+21. PAYMENT SECURITY
+
+====================================================
+
+Payment system must follow:
+
+Secure Payment Provider Integration
+
+No Storage of Card Details
+
+Transaction Logging
+
+Subscription Validation
+
+====================================================
+
+22. COMPLIANCE READINESS
+
+====================================================
+
+Architecture should be prepared for:
+
+GDPR Principles
+
+SOC 2 Readiness
+
+ISO 27001 Alignment
+
+Enterprise Security Requirements
+
+====================================================
+
+23. INCIDENT RESPONSE PLAN
+
+====================================================
+
+Define procedures for:
+
+Security Detection
+
+Investigation
+
+Containment
+
+Recovery
+
+User Notification
+
+Post-Incident Review
+
+====================================================
+
+24. SECURITY TESTING STRATEGY
+
+====================================================
+
+Before production:
+
+Perform:
+
+Authentication Testing
+
+Authorization Testing
+
+API Security Testing
+
+Penetration Testing
+
+Dependency Audit
+
+Performance Security Testing
+
+====================================================
+
+25. SECURITY PRODUCTION CHECKLIST
+
+====================================================
+
+Before launch:
+
+✓ HTTPS enabled
+
+✓ Secure authentication implemented
+
+✓ RLS enabled
+
+✓ API protection enabled
+
+✓ Encryption configured
+
+✓ Logs enabled
+
+✓ Backups tested
+
+✓ Secrets protected
+
+✓ Security monitoring active
+
+✓ Privacy controls available
+
+====================================================
+
+END OF PART 9
+
+====================================================
