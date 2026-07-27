@@ -46,8 +46,23 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       // Redirect unauthenticated users to login
       url.pathname = '/login';
-      // Store original route as redirect parameter
       url.searchParams.set('redirect', path);
+      return NextResponse.redirect(url);
+    }
+
+    // Protected Onboarding Flow Guard (بوابات تهيئة المستخدم وتفضيلاته)
+    const hasCompletedOnboarding = user.user_metadata?.onboarding_completed === true;
+    const isOnboardingPath = path.startsWith('/app/onboarding');
+
+    if (!hasCompletedOnboarding && !isOnboardingPath) {
+      // User must finish onboarding before accessing Dashboard / Tasks / Projects
+      url.pathname = '/app/onboarding';
+      return NextResponse.redirect(url);
+    }
+
+    if (hasCompletedOnboarding && isOnboardingPath) {
+      // Prevent onboarding screen access for already configured profiles
+      url.pathname = '/app/dashboard';
       return NextResponse.redirect(url);
     }
   }

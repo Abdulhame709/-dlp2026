@@ -7,6 +7,7 @@
 ## وثائق المشروع (Project Documentation)
 
 - 📄 **[Technical Implementation Plan (Architecture Validation)](TECHNICAL_IMPLEMENTATION_PLAN.md)**: وثيقة المراجعة البرمجية الكاملة التي تحدد فهم المطور للمشروع، الرؤية الفنية، وهندسة النظام، وتفصيل طبقات البرمجة (Frontend, Backend, Database, AI Layer) وحل التعارضات البرمجية وخارطة الطريق التفصيلية للبناء.
+- 📄 **[User Onboarding & Workspace Wizard Architecture](docs/11-user-onboarding-architecture.md)**: وثيقة البنية البرمجية والتصميم الهندسي لنظام تهيئة وإدخال المستخدم، معايير الخصوصية، إعدادات الملفات والشركات، وتأسيس بوابات العزل وتوجيهات الوسيط البرمجي.
 - 📄 **[Authentication & Security Architecture](docs/10-authentication-architecture.md)**: وثيقة البنية التحتية البرمجية للأمان والمصادقة وإدارة الجلسات وحماية الروابط وتطبيق ضوابط الـ RBAC والحد من الهجمات الأمنية (XSS, CSRF, Brute Force).
 - 📄 **[Database Schema Final Specification](docs/09-database-schema-final.md)**: وثيقة المراجعة النهائية وهيكل جداول قاعدة البيانات ومواصفات الأمان الصارم (RLS) ومفاتيح الربط لجميع الجداول التسعة (9) لـ MVP.
 - 📄 **[Database Blueprint & Design Validation](docs/08-database-blueprint.md)**: المخطط الهندسي التفصيلي لقاعدة بيانات PostgreSQL السحابية. يشتمل على رسم تخطيطي للهيكل والعلاقات (ERD)، ومخطط جداول المستخدمين والبيانات الشخصية متزامنة مع Supabase Auth، وتأسيس حقول التدقيق والتحديث التلقائي عبر Triggers، واستراتيجية الحذف اللطيف (Soft Delete)، وتحليلات الأداء والفهرسة، وخطة الأمان الصارم (RLS)، وهيكلية بذور البيانات التجريبية والتكامل المستمر لقواعد البيانات (Migrations).
