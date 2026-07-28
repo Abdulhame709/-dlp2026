@@ -6,6 +6,7 @@
 
 ## وثائق المشروع (Project Documentation)
 
+- 📄 **[First Real User Validation Report](docs/first-real-user-validation-report.md)**: تقرير التحقق النهائي لأول رحلة مستخدم حقيقية في النظام السحابي، تفصيل ما تم ربطه، وما تم فحصه، وحل المشاكل الفنية وعلمية إعلان جاهزية النشر السحابي الشخصي المغلق.
 - 📄 **[SaaS Product Readiness & Security Stabilization Report](docs/product-readiness-report.md)**: التقرير النهائي لجاهزية المنتج وتدقيق تجربة العميل وعزل البيانات سحابياً والـ SRE ومقاييس الأداء والأمان ومخطط خطوة الإطلاق السحابي الحقيقي التالية.
 - 📄 **[Technical Implementation Plan (Architecture Validation)](TECHNICAL_IMPLEMENTATION_PLAN.md)**: وثيقة المراجعة البرمجية الكاملة التي تحدد فهم المطور للمشروع، الرؤية الفنية، وهندسة النظام، وتفصيل طبقات البرمجة (Frontend, Backend, Database, AI Layer) وحل التعارضات البرمجية وخارطة الطريق التفصيلية للبناء.
 - 📄 **[Private Alpha Quality & Integration Readiness Report](docs/alpha-readiness-report.md)**: تقرير جودة النسخة التجريبية الخاصة (Private Alpha)، وتفصيل حالة دمج الأنظمة، وتحليل المخاطر التشغيلية والـ SRE، وتأصيل الجاهزية الفنية للإطلاق التجريبي.
