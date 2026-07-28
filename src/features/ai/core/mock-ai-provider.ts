@@ -93,16 +93,16 @@ export class MockAIProvider implements IAIProvider {
         ]
       };
     }
-    // 4. Match Priority Engine (Merged to satisfy BOTH older and newer schemas simultaneously)
+    // 4. Match Priority Engine
     else if (system.includes('priority engine')) {
       mockData = {
-        // Schema 1 fields (Phase 3A/3B prioritisation)
+        // Schema 1 fields
         taskId: '66666666-6666-6666-6666-666666666661',
         suggestedPriority: 'CRITICAL',
         score: 95,
         reasoning: 'The task blocks critical database deployment pipelines and is marked as urgent.',
         
-        // Schema 2 fields (Build Cycle 1 priority score)
+        // Schema 2 fields
         priorityScore: 92,
         confidence: 96,
         reason: 'The task blocks critical database deployment pipelines and is marked as urgent.',
@@ -117,7 +117,16 @@ export class MockAIProvider implements IAIProvider {
         ]
       };
     }
-    // 6. Match other structured output tasks (Daily Planner, etc.)
+    // 6. Match Task Intelligence Engine (Added for premium task experience)
+    else if (system.includes('task intelligence engine')) {
+      mockData = {
+        betterDescription: 'Configure, audit, and test strict Supabase PostgreSQL Row Level Security (RLS) policies by simulating multi-tenant contexts.',
+        suggestedPriority: 'CRITICAL',
+        suggestedDuration: 180,
+        riskAssessment: 'Dependency warning: This security audit task is blocked by the pending schema migration task.',
+      };
+    }
+    // 7. Match other structured output tasks (Daily Planner, etc.)
     else if (system.includes('planning engine')) {
       mockData = {
         date: new Date().toISOString().split('T')[0],

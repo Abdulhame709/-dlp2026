@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Task, TaskStatus, TaskPriority, ChecklistItem, Comment, Activity } from '@/core/types/task-types';
 import { TaskService } from '@/features/tasks/services/task-service';
 import { TaskStateMachine } from '@/features/tasks/services/task-state-machine';
+import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
 import { useKeyboardShortcuts } from '@/shared/hooks/use-shortcuts';
 import { SyncManager } from '@/core/utils/sync-manager';
 import { Widget } from '@/shared/components/dashboard/widget';
@@ -30,10 +31,13 @@ import {
   Clock, 
   Activity as ActivityIcon,
   Flame,
-  Undo
+  Undo,
+  TrendingUp,
+  AlertTriangle
 } from 'lucide-react';
 
 type TaskView = 'LIST' | 'KANBAN' | 'CALENDAR' | 'TIMELINE';
+type TaskFilterType = 'ALL' | 'TODAY' | 'UPCOMING' | 'PRIORITY' | 'COMPLETED';
 
 export default function TasksPage() {
   // Core Task State
@@ -41,6 +45,7 @@ export default function TasksPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedTasks, setSelectedTasks] = React.useState<string[]>([]);
   const [activeView, setActiveView] = React.useState<TaskView>('LIST');
+  const [activeTabFilter, setActiveTabFilter] = React.useState<TaskFilterType>('ALL');
   
   // Filtering & Search
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -52,6 +57,10 @@ export default function TasksPage() {
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = React.useState(false);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   
+  // AI Task Intelligence States
+  const [isAnalyzingTask, setIsAnalyzingTask] = React.useState(false);
+  const [aiTaskSuggestions, setAiTaskSuggestions] = React.useState<any>(null);
+
   // Form bindings for New Task
   const [newTitle, setNewTitle] = React.useState('');
   const [newPriority, setNewPriority] = React.useState<TaskPriority>('MEDIUM');
@@ -216,6 +225,49 @@ export default function TasksPage() {
     }
   };
 
+  // AI Task Intelligence Trigger & apply functions
+  const triggerTaskAnalysis = async () => {
+    if (!selectedTask) return;
+    setIsAnalyzingTask(true);
+    setAiTaskSuggestions(null);
+    try {
+      const response = await AIAssistantService.analyzeTaskIntelligence(
+        demoUserId,
+        selectedTask.title,
+        selectedTask.description || ''
+      );
+      setAiTaskSuggestions(response);
+    } catch (err) {
+      console.error('AI Task analysis failed:', err);
+    } finally {
+      setIsAnalyzingTask(false);
+    }
+  };
+
+  const applyAiDescription = async () => {
+    if (!selectedTask || !aiTaskSuggestions) return;
+    const betterDesc = aiTaskSuggestions.betterDescription;
+    setSelectedTask(prev => prev ? { ...prev, description: betterDesc } : null);
+    setTasks(prev => prev.map(t => t.id === selectedTask.id ? { ...t, description: betterDesc } : t));
+    await TaskService.updateTask(selectedTask.id, { description: betterDesc });
+  };
+
+  const applyAiPriority = async () => {
+    if (!selectedTask || !aiTaskSuggestions) return;
+    const priority = aiTaskSuggestions.suggestedPriority as TaskPriority;
+    setSelectedTask(prev => prev ? { ...prev, priority } : null);
+    setTasks(prev => prev.map(t => t.id === selectedTask.id ? { ...t, priority } : t));
+    await TaskService.updateTask(selectedTask.id, { priority });
+  };
+
+  const applyAiDuration = async () => {
+    if (!selectedTask || !aiTaskSuggestions) return;
+    const duration = aiTaskSuggestions.suggestedDuration;
+    setSelectedTask(prev => prev ? { ...prev, estimatedDuration: duration } : null);
+    setTasks(prev => prev.map(t => t.id === selectedTask.id ? { ...t, estimatedDuration: duration } : t));
+    await TaskService.updateTask(selectedTask.id, { estimatedDuration: duration });
+  };
+
   // Checklist Mutations
   const handleAddChecklistItem = async () => {
     if (!selectedTask || !checklistInput.trim()) return;
@@ -307,7 +359,19 @@ export default function TasksPage() {
     // AI Filter
     const matchesAi = !isAiFilterActive || task.priority === 'CRITICAL' || task.priority === 'HIGH';
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesAi;
+    // Premium Smart Views filter (Today, Upcoming, High Priority, Completed)
+    let matchesTab = true;
+    if (activeTabFilter === 'TODAY') {
+      matchesTab = task.status === 'IN_PROGRESS' || task.priority === 'CRITICAL';
+    } else if (activeTabFilter === 'UPCOMING') {
+      matchesTab = task.status === 'PLANNED' || task.status === 'INBOX';
+    } else if (activeTabFilter === 'PRIORITY') {
+      matchesTab = task.priority === 'CRITICAL' || task.priority === 'HIGH';
+    } else if (activeTabFilter === 'COMPLETED') {
+      matchesTab = task.status === 'COMPLETED';
+    }
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesAi && matchesTab;
   });
 
   return (
@@ -357,7 +421,26 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* 2. Search, Filters, and Creation Triggers */}
+      {/* 2. Premium Smart Views Navigation Tab Layout */}
+      <div className="flex items-center gap-1.5 border-b border-border pb-1 select-none overflow-x-auto">
+        {(['ALL', 'TODAY', 'UPCOMING', 'PRIORITY', 'COMPLETED'] as TaskFilterType[]).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTabFilter(tab)}
+            className={cn(
+              'h-9 px-4 text-xs font-bold transition-all relative border-b-2 border-transparent hover:text-foreground cursor-pointer whitespace-nowrap',
+              {
+                'text-primary border-primary': activeTabFilter === tab,
+                'text-muted-foreground': activeTabFilter !== tab,
+              }
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* 3. Search, Filters, and Creation Triggers */}
       <div className="flex flex-col md:flex-row gap-4 justify-between select-none">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-64">
@@ -413,7 +496,7 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* 3. Bulk Actions Indicator (Fires when items selected) */}
+      {/* 4. Bulk Actions Indicator (Fires when items selected) */}
       {selectedTasks.length > 0 && (
         <div className="flex items-center justify-between p-3.5 bg-primary/5 border border-primary/20 rounded-xl select-none animate-fade-in">
           <span className="text-xs font-semibold text-primary">
@@ -433,7 +516,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* 4. Active Main View Areas */}
+      {/* 5. Active Main View Areas */}
       {isLoading ? (
         <div className="space-y-3">
           <Card className="h-20 flex items-center px-4"><Skeleton className="h-6 w-3/4" /></Card>
@@ -449,14 +532,17 @@ export default function TasksPage() {
       ) : (
         <div className="w-full">
           
-          {/* 4.1 List View */}
+          {/* 5.1 List View */}
           {activeView === 'LIST' && (
             <div className="space-y-3">
               {filteredTasks.map(task => (
                 <div 
                   key={task.id}
-                  onClick={() => setSelectedTask(task)}
-                  className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/20 transition-all cursor-pointer shadow-sm select-none"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setAiTaskSuggestions(null); // Clear previous suggestions on click
+                  }}
+                  className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/20 transition-all cursor-pointer shadow-sm select-none animate-fade-in"
                 >
                   <div className="flex items-center space-x-3.5 flex-1 min-w-0">
                     <input 
@@ -501,7 +587,7 @@ export default function TasksPage() {
             </div>
           )}
 
-          {/* 4.2 Kanban View */}
+          {/* 5.2 Kanban View */}
           {activeView === 'KANBAN' && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {(['INBOX', 'PLANNED', 'IN_PROGRESS', 'COMPLETED'] as TaskStatus[]).map(status => {
@@ -532,7 +618,10 @@ export default function TasksPage() {
                           onDragStart={(e) => {
                             e.dataTransfer.setData('text/plain', task.id);
                           }}
-                          onClick={() => setSelectedTask(task)}
+                          onClick={() => {
+                            setSelectedTask(task);
+                            setAiTaskSuggestions(null);
+                          }}
                           className="p-3.5 bg-card border border-border rounded-xl shadow-sm hover:border-primary/20 cursor-grab active:cursor-grabbing select-none transition-all space-y-3"
                         >
                           <h4 className="text-xs font-bold text-foreground leading-snug">{task.title}</h4>
@@ -557,7 +646,7 @@ export default function TasksPage() {
             </div>
           )}
 
-          {/* 4.3 Calendar Grid View */}
+          {/* 5.3 Calendar Grid View */}
           {activeView === 'CALENDAR' && (
             <div className="grid grid-cols-7 gap-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
@@ -567,7 +656,10 @@ export default function TasksPage() {
                     {filteredTasks.filter((_, idx) => idx % 7 === i).map(task => (
                       <div 
                         key={task.id}
-                        onClick={() => setSelectedTask(task)}
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setAiTaskSuggestions(null);
+                        }}
                         className="p-2 border border-border bg-muted/35 hover:border-primary/25 rounded-lg text-[10px] font-semibold cursor-pointer truncate"
                       >
                         {task.title}
@@ -579,11 +671,14 @@ export default function TasksPage() {
             </div>
           )}
 
-          {/* 4.4 Timeline View */}
+          {/* 5.4 Timeline View */}
           {activeView === 'TIMELINE' && (
             <div className="space-y-4 select-none">
               {filteredTasks.map((task, idx) => (
-                <div key={task.id} onClick={() => setSelectedTask(task)} className="flex items-center border border-border rounded-xl bg-card p-4 hover:border-primary/20 cursor-pointer shadow-sm">
+                <div key={task.id} onClick={() => {
+                  setSelectedTask(task);
+                  setAiTaskSuggestions(null);
+                }} className="flex items-center border border-border rounded-xl bg-card p-4 hover:border-primary/20 cursor-pointer shadow-sm">
                   <span className="text-xs font-bold text-foreground w-48 truncate mr-4">{task.title}</span>
                   <div className="flex-1 h-6 bg-muted/40 rounded-lg relative overflow-hidden">
                     <div 
@@ -602,7 +697,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* 5. Slide-Out Task Detail Drawer Panel */}
+      {/* 6. Slide-Out Task Detail Drawer Panel */}
       {selectedTask && (
         <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-30 flex justify-end animate-fade-in" onClick={() => setSelectedTask(null)}>
           <div 
@@ -658,6 +753,60 @@ export default function TasksPage() {
                   </div>
                 </div>
               </div>
+
+              {/* ========================================== */}
+              {/* AI TASK INTELLIGENCE WIDGET (SaaS Polish) */}
+              {/* ========================================== */}
+              <Card className="p-4 border border-primary/20 bg-primary/5 space-y-3.5 select-none">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold flex items-center gap-1.5 text-primary">
+                    <Sparkles className="h-4 w-4 animate-bounce text-primary shrink-0" /> AI Task Intelligence
+                  </h4>
+                  <Button 
+                    variant="outline" 
+                    className="h-7 px-2 text-[10px] bg-card hover:bg-muted"
+                    onClick={triggerTaskAnalysis}
+                    isLoading={isAnalyzingTask}
+                  >
+                    Get AI Advice
+                  </Button>
+                </div>
+
+                {aiTaskSuggestions && (
+                  <div className="space-y-3 animate-fade-in text-[11px] leading-relaxed">
+                    {/* Suggestion 1: Better Description */}
+                    <div className="p-2 bg-card rounded border border-border space-y-1">
+                      <span className="font-bold text-primary block">Suggested Description:</span>
+                      <p className="text-muted-foreground">{aiTaskSuggestions.betterDescription}</p>
+                      <Button variant="ghost" className="h-5 px-1.5 text-[9px] mt-1 hover:bg-muted" onClick={applyAiDescription}>
+                        Apply Description
+                      </Button>
+                    </div>
+
+                    {/* Suggestion 2: Priority and Duration */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 bg-card rounded border border-border space-y-1">
+                        <span className="font-bold text-primary block">Priority: {aiTaskSuggestions.suggestedPriority}</span>
+                        <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiPriority}>
+                          Apply Priority
+                        </Button>
+                      </div>
+                      <div className="p-2 bg-card rounded border border-border space-y-1">
+                        <span className="font-bold text-primary block">Duration: {aiTaskSuggestions.suggestedDuration} mins</span>
+                        <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiDuration}>
+                          Apply Duration
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Suggestion 3: Risk Assessment */}
+                    <div className="p-2.5 rounded bg-error/5 border border-error/15 flex items-start space-x-1.5 text-xs text-error">
+                      <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                      <p className="font-medium">{aiTaskSuggestions.riskAssessment}</p>
+                    </div>
+                  </div>
+                )}
+              </Card>
 
               {/* Checklist Sub-module */}
               <div className="space-y-3">
@@ -746,7 +895,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* 6. Create New Task Modal Dialog Overlay */}
+      {/* 7. Create New Task Modal Dialog Overlay */}
       {isNewTaskModalOpen && (
         <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-30 flex items-center justify-center p-4 select-none animate-fade-in" onClick={() => setIsNewTaskModalOpen(false)}>
           <div className="max-w-md w-full border border-border bg-card rounded-xl p-6 shadow-xl space-y-5" onClick={(e) => e.stopPropagation()}>

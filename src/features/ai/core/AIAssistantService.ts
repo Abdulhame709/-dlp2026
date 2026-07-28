@@ -43,6 +43,14 @@ export const coachSchema = z.object({
   recommendedActions: z.array(z.string()),
 });
 
+// AI Task Intelligence Schema
+export const taskIntelligenceSchema = z.object({
+  betterDescription: z.string(),
+  suggestedPriority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  suggestedDuration: z.number(), // in minutes
+  riskAssessment: z.string(),
+});
+
 export class AIAssistantService {
   /**
    * 1. AI Task Prioritization: Computes task execution order
@@ -138,6 +146,23 @@ export class AIAssistantService {
         responseFormat: 'json',
       },
       (data) => coachSchema.parse(data)
+    );
+
+    return response.structuredJson;
+  }
+
+  /**
+   * 5. AI Task Intelligence: Analyzes and enhances task metadata
+   */
+  static async analyzeTaskIntelligence(userId: string, taskTitle: string, description = '') {
+    const response = await AIService.generateStructuredOutput(
+      userId,
+      {
+        systemInstructions: 'You are the Cortex AI Task Intelligence Engine. Analyze this task and suggest improvements: better description, suggested priority, duration estimate, and potential risk warnings.',
+        userPrompt: `Task: ${taskTitle}\nDescription: ${description}`,
+        responseFormat: 'json',
+      },
+      (data) => taskIntelligenceSchema.parse(data)
     );
 
     return response.structuredJson;
