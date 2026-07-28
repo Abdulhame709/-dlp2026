@@ -1,13 +1,23 @@
 import { AnalyticsService } from '@/features/analytics/analytics-service';
+import { LongTermMemoryManager } from '../memory/long-term-memory';
 
 export class UserContextBuilder {
   /**
-   * Compiles the user's complete profile and intelligence behavioral data into structured XML context
+   * Compiles the user's complete profile, intelligence data, and long-term memories into structured XML context
    */
   static async buildPromptContext(userId: string): Promise<string> {
     try {
       const profile = await AnalyticsService.getUserProfile(userId);
       const metrics = await AnalyticsService.getMetrics(userId);
+      
+      // Query active long-term memories to personalize AI context
+      const memories = await LongTermMemoryManager.getMemories(userId);
+      const memoriesXml = memories
+        .map(
+          (m) =>
+            `    <memory type="${m.memoryType}" importance="${m.importanceScore}">${m.content}</memory>`
+        )
+        .join('\n');
 
       return `
 <user_context>
@@ -30,6 +40,9 @@ export class UserContextBuilder {
     <velocity>${metrics.taskVelocity} tasks/day</velocity>
     <focus_minutes>${metrics.focusTimeMinutes}</focus_minutes>
   </recent_metrics>
+  <long_term_memories>
+${memoriesXml || '    <memory>No active long-term memories recorded yet.</memory>'}
+  </long_term_memories>
 </user_context>
       `.trim();
     } catch (err: any) {

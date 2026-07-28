@@ -5,6 +5,8 @@ import { ConversationSession, ChatMessage } from '@/features/ai/chat/conversatio
 import { ConversationService } from '@/features/ai/chat/conversation-service';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
 import { AIContextManager } from '@/features/ai/core/context-manager';
+import { LongTermMemoryManager } from '@/features/ai/memory/long-term-memory';
+import { AIMemoryRecord } from '@/features/ai/memory/memory-types';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -28,7 +30,8 @@ import {
   User,
   Building,
   Calendar,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 
 export default function AIAssistantPage() {
@@ -41,6 +44,9 @@ export default function AIAssistantPage() {
   const [isThinking, setIsThinking] = React.useState(false);
   const [promptInput, setPromptInput] = React.useState('');
 
+  // AI Memories state
+  const [memories, setMemories] = React.useState<AIMemoryRecord[]>([]);
+
   // 2. Intelligent AI Features States
   const [aiPrioritization, setAiPrioritization] = React.useState<any>(null);
   const [aiDailyPlan, setAiDailyPlan] = React.useState<any>(null);
@@ -51,27 +57,36 @@ export default function AIAssistantPage() {
   // 3. Context Visualization State
   const [showContextVisualizer, setShowContextVisualizer] = React.useState(true);
 
-  // Load Sessions on Mount
-  const loadSessions = React.useCallback(async () => {
+  // Load Sessions and Memories on Mount
+  const loadSessionsAndMemories = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const list = await ConversationService.getUserSessions(demoUserId);
       setSessions(list);
       if (list.length > 0) {
-        // Hydrate the first session as active
         const detailed = await ConversationService.getSession(list[0].id);
         setActiveSession(detailed);
       }
+
+      // Load or Seed long-term memories
+      let activeMemories = await LongTermMemoryManager.getMemories(demoUserId);
+      if (activeMemories.length === 0) {
+        await LongTermMemoryManager.saveMemory(demoUserId, 'WORK_PATTERN', 'Prefers morning deep focus slots (09:00 - 12:00)', 8);
+        await LongTermMemoryManager.saveMemory(demoUserId, 'PREFERENCE', 'Works significantly better with detailed checklists', 7);
+        await LongTermMemoryManager.saveMemory(demoUserId, 'BEHAVIOR', 'Focuses best inside 90-minute blocks', 6);
+        activeMemories = await LongTermMemoryManager.getMemories(demoUserId);
+      }
+      setMemories(activeMemories);
     } catch (err) {
-      console.error('Failed to load conversations:', err);
+      console.error('Failed to load conversations or memories:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   React.useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+    loadSessionsAndMemories();
+  }, [loadSessionsAndMemories]);
 
   // Create New Conversation Session
   const handleStartNewSession = async () => {
@@ -125,6 +140,18 @@ export default function AIAssistantPage() {
       }
     } catch (err) {
       console.error('Failed to delete chat:', err);
+    }
+  };
+
+  // Delete Memory item
+  const handleDeleteMemory = async (memoryId: string) => {
+    try {
+      const success = await LongTermMemoryManager.deleteMemory(demoUserId, memoryId);
+      if (success) {
+        setMemories(prev => prev.filter(m => m.id !== memoryId));
+      }
+    } catch (err) {
+      console.error('Failed to delete memory:', err);
     }
   };
 
@@ -353,6 +380,29 @@ export default function AIAssistantPage() {
       {/* PANEL: 4 Intelligent AI Tools (Right)      */}
       {/* ========================================== */}
       <div className="border border-border bg-card rounded-xl flex flex-col overflow-hidden h-full overflow-y-auto p-4 space-y-6 shadow-sm select-none">
+        
+        {/* Personal AI Memory Section (SaaS Upgrade) */}
+        <div>
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase">
+              <BrainCircuit className="h-4 w-4 text-primary animate-pulse" /> Personal AI Memory
+            </span>
+          </div>
+          <div className="space-y-2 pt-2">
+            {memories.map(mem => (
+              <div key={mem.id} className="p-2.5 border border-border bg-muted/35 rounded-lg flex items-start justify-between gap-1 text-[10px] leading-relaxed">
+                <span>{mem.content}</span>
+                <button 
+                  onClick={() => handleDeleteMemory(mem.id)}
+                  className="text-muted-foreground hover:text-error opacity-60 hover:opacity-100 p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div>
           <h2 className="text-sm font-bold tracking-tight">AI Workspace Tools</h2>
           <p className="text-[10px] text-muted-foreground font-arabic">الأدوات الأربعة للذكاء الاصطناعي</p>
@@ -466,7 +516,7 @@ export default function AIAssistantPage() {
         </div>
 
         {/* ========================================== */}
-        {/* CONTEXT VISUALIZATION PANEL (Transparency) */}
+        {/* CONTEXT VISUALIZATION PANEL (Privacy)      */}
         {/* ========================================== */}
         <div className="pt-4 border-t border-border">
           <div className="flex items-center justify-between mb-2">
