@@ -46,10 +46,7 @@ export class SupabaseBillingRepository {
     // Upsert subscription mapping
     const { data, error } = await supabase
       .from('subscriptions')
-      .upsert({
-        user_id: userId,
-        ...dbRow,
-      }, { onConflict: 'user_id' })
+      .upsert(dbRow, { onConflict: 'user_id' })
       .select()
       .single();
 

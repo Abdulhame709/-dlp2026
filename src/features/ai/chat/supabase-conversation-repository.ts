@@ -158,4 +158,4 @@ export class SupabaseConversationRepository implements IConversationRepository {
     return !error;
   }
 }
-export { IConversationRepository };
+export type { IConversationRepository };

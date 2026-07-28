@@ -80,4 +80,4 @@ export class SupabaseSettingsRepository implements ISettingsRepository {
     return this.mapRowToEntity(data);
   }
 }
-export { ISettingsRepository };
+export type { ISettingsRepository };

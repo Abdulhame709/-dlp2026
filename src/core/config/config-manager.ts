@@ -23,7 +23,7 @@ export class ConfigManager {
     if (this.config) return this.config;
 
     const isProduction = env.nodeEnv === 'production';
-    const isStaging = env.nodeEnv === 'staging';
+    const isStaging = (env.nodeEnv as string) === 'staging';
     const isDevelopment = env.nodeEnv === 'development';
 
     // Strict Production Key validation checks (Prevents deployment with empty/mock configurations)
