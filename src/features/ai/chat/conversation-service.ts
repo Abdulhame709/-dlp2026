@@ -1,16 +1,12 @@
 import { IConversationRepository } from './conversation-repository-interface';
-import { MockConversationRepository } from './mock-conversation-repository';
 import { ConversationSession, ChatMessage } from './conversation-types';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class ConversationService {
-  private static repository: IConversationRepository = new MockConversationRepository();
-
-  /**
-   * Set dynamic repository implementation at runtime
-   */
-  static setRepository(customRepo: IConversationRepository) {
-    this.repository = customRepo;
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): IConversationRepository {
+    return DependencyInjector.getConversationRepository();
   }
 
   /**

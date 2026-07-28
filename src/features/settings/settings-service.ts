@@ -1,13 +1,12 @@
 import { ISettingsRepository } from './settings-repository-interface';
-import { MockSettingsRepository } from './mock-settings-repository';
 import { UserSettingsProfile } from './settings-types';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class SettingsService {
-  private static repository: ISettingsRepository = new MockSettingsRepository();
-
-  static setRepository(customRepo: ISettingsRepository) {
-    this.repository = customRepo;
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): ISettingsRepository {
+    return DependencyInjector.getSettingsRepository();
   }
 
   static async getUserSettings(userId: string): Promise<UserSettingsProfile> {

@@ -1,17 +1,12 @@
 import { Task, TaskStatus, TaskPriority } from '@/core/types/task-types';
 import { ITaskRepository } from '../repositories/task-repository-interface';
-import { MockTaskRepository } from '../repositories/mock-task-repository';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class TaskService {
-  private static repository: ITaskRepository = new MockTaskRepository();
-
-  /**
-   * Allows dynamic run-time swapping of the repository implementation
-   * (e.g., swapping MockTaskRepository with SupabaseTaskRepository)
-   */
-  static setRepository(customRepository: ITaskRepository) {
-    this.repository = customRepository;
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): ITaskRepository {
+    return DependencyInjector.getTaskRepository();
   }
 
   /**
