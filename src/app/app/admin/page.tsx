@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card';
 import { Skeleton } from '@/shared/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { Building, Users, BrainCircuit, Activity, ShieldAlert, HeartPulse } from 'lucide-react';
 
 export default function AdminPage() {

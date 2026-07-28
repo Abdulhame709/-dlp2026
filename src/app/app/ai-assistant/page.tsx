@@ -26,7 +26,9 @@ import {
   HelpCircle,
   Flame,
   User,
-  Building
+  Building,
+  Calendar,
+  Layers
 } from 'lucide-react';
 
 export default function AIAssistantPage() {
@@ -130,7 +132,7 @@ export default function AIAssistantPage() {
   const handleRateMessage = async (messageId: string, rating: 'LIKE' | 'DISLIKE') => {
     try {
       await ConversationService.rateMessage(messageId, rating);
-      // Optimistically update active messages local state
+      // Elevate rating local state
       setActiveSession(prev => {
         if (!prev) return null;
         const updated = (prev.messages || []).map(m => 

@@ -15,7 +15,7 @@ const mockBetaInvitations = new Map<string, BetaInvitation>([
     email: 'beta-pioneer@cortexai.com',
     accessCode: 'CORTEX_BETA_2026',
     isUsed: false,
-    role: 'OWNER',
+    role: 'OWNER' as const,
     expiresAt: new Date(Date.now() + 86400000 * 30),
   }
 ].map(invite => [invite.accessCode, invite]));
