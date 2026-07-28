@@ -93,9 +93,16 @@ export class MockAIProvider implements IAIProvider {
         ]
       };
     }
-    // 4. Match Priority Engine
+    // 4. Match Priority Engine (Merged to satisfy BOTH older and newer schemas simultaneously)
     else if (system.includes('priority engine')) {
       mockData = {
+        // Schema 1 fields (Phase 3A/3B prioritisation)
+        taskId: '66666666-6666-6666-6666-666666666661',
+        suggestedPriority: 'CRITICAL',
+        score: 95,
+        reasoning: 'The task blocks critical database deployment pipelines and is marked as urgent.',
+        
+        // Schema 2 fields (Build Cycle 1 priority score)
         priorityScore: 92,
         confidence: 96,
         reason: 'The task blocks critical database deployment pipelines and is marked as urgent.',

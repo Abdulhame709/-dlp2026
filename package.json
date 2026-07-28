@@ -20,7 +20,8 @@
     "test:saas": "npx tsx src/tests/saas-foundation-test.ts",
     "test:ready": "npx tsx src/tests/production-readiness-test.ts",
     "test:live": "npx tsx src/tests/production-live-verification.ts",
-    "test:beta": "npx tsx src/tests/beta-launch-test.ts"
+    "test:beta": "npx tsx src/tests/beta-launch-test.ts",
+    "test:consolidate": "npx tsx src/tests/production-consolidation-test.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
