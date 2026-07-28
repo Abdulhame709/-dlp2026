@@ -7,11 +7,8 @@
 ## وثائق المشروع (Project Documentation)
 
 - 📄 **[Technical Implementation Plan (Architecture Validation)](TECHNICAL_IMPLEMENTATION_PLAN.md)**: وثيقة المراجعة البرمجية الكاملة التي تحدد فهم المطور للمشروع، الرؤية الفنية، وهندسة النظام، وتفصيل طبقات البرمجة (Frontend, Backend, Database, AI Layer) وحل التعارضات البرمجية وخارطة الطريق التفصيلية للبناء.
-- 📄 **[Production Backend Integration & Adapter Architecture](docs/backend-architecture.md)**: وثيقة البنية الهندسية لدمج الأنظمة، الـ Repository Pattern، وإعداد محركات وموصلات Supabase و Prisma ORM الرسمية للإنتاج.
-- 📄 **[Data Flow & Telemetry Ingestion Blueprints](docs/data-flow.md)**: مخططات وسلسلة تدفق البيانات وتوليد وتدقيق المهام ووسوم الـ Telemetry وأجهزة التحديث التلقائي للـ Triggers.
-- 📄 **[Realtime Database Synchronization Specs](docs/realtime.md)**: مواصفات المزامنة الفورية للبيانات عبر بروتوكولات WebSocket وتفصيل قنوات وموصلات Supabase Realtime وقواعد RLS المرتبطة بها.
-- 📄 **[Offline Synchronization & Conflict Resolution Specs](docs/offline-sync.md)**: مواصفات العمل دون اتصال بالإنترنت وتصميم منسق الـ SyncManager واستراتيجيات حل النزاعات التقنية (Last-Write-Wins).
-- 📄 **[Supabase Cloud Storage Integration Specs](docs/storage.md)**: وثيقة مواصفات دمج مستودعات التخزين السحابية للمرفقات وحلول التحقق من الحجم والملفات والأمان الصارم والـ Temporary Signed URLs.
+- 📄 **[Private Alpha Quality & Integration Readiness Report](docs/alpha-readiness-report.md)**: تقرير جودة النسخة التجريبية الخاصة (Private Alpha)، وتفصيل حالة دمج الأنظمة، وتحليل المخاطر التشغيلية والـ SRE، وتأصيل الجاهزية الفنية للإطلاق التجريبي.
+- 📄 **[Supabase Production & Alpha Setup Guide](docs/supabase-setup-guide.md)**: الدليل الكامل والمنظم خطوة بخطوة لتأسيس خوادم ومشاريع Supabase للإنتاج، وتمرير الجداول والفهارس سحابياً، وضبط مستودعات الملفات وتنبيهات الـ Realtime.
 - 📄 **[Core Domain Foundation & State Machine Architecture](docs/13-core-domain-foundation.md)**: وثيقة البنية الهندسية لطبقة منطق الأعمال ووحدة المهام (Tasks Domain)، محرك الـ State Machine الصارم لتنظيم حالات المهام، وتفصيل خدمات الـ Task/Project/Goal/Notification وإعداد المستودع الوهمي (Mock Repository) لتجريب الواجهات.
 - 📄 **[App Shell & Design System Architecture](docs/12-app-shell-architecture.md)**: وثيقة مواصفات وبنية هيكل التطبيق وقواعد لغة التصميم المتجاوبة، تصميم الـ Sidebar القابل للطي، شريط التنقل العلوي، مبدلات مساحات العمل والمؤسسات، ومكونات لوحة التحكم المرنة (Dashboard Widget Framework).
 - 📄 **[User Onboarding & Workspace Wizard Architecture](docs/11-user-onboarding-architecture.md)**: وثيقة البنية البرمجية والتصميم الهندسي لنظام تهيئة وإدخال المستخدم، معايير الخصوصية، إعدادات الملفات والشركات، وتأسيس بوابات العزل وتوجيهات الوسيط البرمجي.
