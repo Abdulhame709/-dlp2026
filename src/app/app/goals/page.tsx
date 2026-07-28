@@ -2,26 +2,21 @@
 
 import * as React from 'react';
 import { AIGoalAnalyzer, GoalAnalysis, GeneratedProject, GeneratedTasks, Timeline } from '@/features/ai/core/ai-goal-analyzer';
+import { TaskService } from '@/features/tasks/services/task-service';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Skeleton } from '@/shared/components/ui/skeleton';
-import { Widget } from '@/shared/components/dashboard/widget';
 import { cn } from '@/lib/utils';
 import { 
   Sparkles, 
-  ArrowRight, 
   Target, 
   Folder, 
   CheckSquare, 
   Calendar, 
-  Activity, 
   AlertTriangle, 
-  Award, 
-  Settings, 
   TrendingUp,
-  BrainCircuit,
-  Lock
+  ArrowRight
 } from 'lucide-react';
 
 export default function GoalsPage() {
@@ -30,6 +25,7 @@ export default function GoalsPage() {
   // State bindings
   const [goalTitle, setGoalTitle] = React.useState('Launch Cortex AI SaaS in 3 months');
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [statusMessage, setStatusMessage] = React.useState('');
 
   // Result States
   const [analysis, setAnalysis] = React.useState<GoalAnalysis | null>(null);
@@ -41,6 +37,7 @@ export default function GoalsPage() {
   const handleRunProductIntelligence = async () => {
     if (!goalTitle.trim()) return;
     setIsAnalyzing(true);
+    setStatusMessage('Analyzing goal objectives...');
 
     // Reset previous states
     setAnalysis(null);
@@ -54,24 +51,41 @@ export default function GoalsPage() {
       const goalAnalysis = await AIGoalAnalyzer.analyzeGoal(demoUserId, goalTitle, 'Core SaaS Launch');
       setAnalysis(goalAnalysis);
 
-      // 2. Execute Project Generation
+      // 2. Deconstruct Goal into Projects and Milestones
+      setStatusMessage('Deconstructing goal into projects and milestones...');
       const projGen = await AIGoalAnalyzer.generateProjects(demoUserId, goalTitle);
       setProjectsData(projGen);
 
-      // 3. Execute Milestone Tasks Breakdown
+      // 3. Break down Milestones into Executable Tasks
+      setStatusMessage('Breaking down milestones into executable tasks...');
       const taskGen = await AIGoalAnalyzer.breakdownMilestoneTasks(demoUserId, 'Schema Migration');
       setTasksData(taskGen);
 
-      // 4. Execute Priority Engine Calculation
+      // 4. Save AI-generated tasks to TaskService (Connecting Goals -> Projects -> Tasks Flow)
+      setStatusMessage('Saving AI-generated tasks to your workspace...');
+      for (const t of taskGen.tasks) {
+        await TaskService.createTask(demoUserId, {
+          title: t.title,
+          description: t.description,
+          priority: t.priority,
+          status: 'INBOX',
+        });
+      }
+
+      // 5. Calculate intelligent priorities
+      setStatusMessage('Calculating priority scores and confidence...');
       const priority = await AIGoalAnalyzer.calculatePriority(demoUserId, 'Deploy PostgreSQL tables on Supabase', 9, 10);
       setPriorityData(priority);
 
-      // 5. Execute Timeline Scheduling
+      // 6. Generate Timeline
+      setStatusMessage('Generating optimal execution timeline...');
       const timeline = await AIGoalAnalyzer.generateTimeline(demoUserId, ['Deploy PostgreSQL tables', 'Setup Auth Provider', 'Audit RLS policies']);
       setTimelineData(timeline);
 
+      setStatusMessage('Roadmap successfully compiled and saved!');
     } catch (err) {
       console.error('SaaS Product Intelligence execution failed:', err);
+      setStatusMessage('Execution failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -106,6 +120,12 @@ export default function GoalsPage() {
             <Sparkles className="h-4.5 w-4.5 mr-2 animate-bounce shrink-0" /> Transform to Roadmap
           </Button>
         </div>
+
+        {statusMessage && (
+          <p className="text-xs font-semibold text-primary select-none animate-pulse">
+            ✨ {statusMessage}
+          </p>
+        )}
       </div>
 
       {/* 2. Loading Placeholder Skeletons */}
