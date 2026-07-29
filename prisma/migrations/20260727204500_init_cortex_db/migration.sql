@@ -11,6 +11,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create SECURITY DEFINER helper functions to permanently eliminate RLS infinite recursion
+CREATE OR REPLACE FUNCTION public.is_org_member(org_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 
+        FROM public.organization_members 
+        WHERE organization_id = org_id AND user_id = auth.uid()
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION public.is_org_admin(org_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Check if user is OWNER of the organization
+    IF EXISTS (SELECT 1 FROM public.organizations WHERE id = org_id AND owner_id = auth.uid()) THEN
+        RETURN TRUE;
+    END IF;
+    -- Check if user is OWNER or ADMIN in organization_members
+    RETURN EXISTS (
+        SELECT 1 
+        FROM public.organization_members 
+        WHERE organization_id = org_id AND user_id = auth.uid() AND role IN ('OWNER', 'ADMIN')
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+
 -- 1. Create Profiles Table
 CREATE TABLE public.profiles (
     id UUID PRIMARY KEY,
@@ -198,87 +227,77 @@ ALTER TABLE public.feature_flags ENABLE ROW LEVEL SECURITY;
 
 -- profiles RLS Policies
 CREATE POLICY profiles_select_all ON public.profiles FOR SELECT TO authenticated USING (deleted_at IS NULL);
+CREATE POLICY profiles_insert_owner ON public.profiles FOR INSERT TO authenticated WITH CHECK (id = auth.uid());
 CREATE POLICY profiles_update_owner ON public.profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
 
 -- organizations RLS Policies
-CREATE POLICY orgs_select_member ON public.organizations FOR SELECT TO authenticated USING (
-    id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid())
-);
+CREATE POLICY orgs_select_member ON public.organizations FOR SELECT TO authenticated USING (public.is_org_member(id));
 CREATE POLICY orgs_insert_owner ON public.organizations FOR INSERT TO authenticated WITH CHECK (owner_id = auth.uid());
-CREATE POLICY orgs_update_admin ON public.organizations FOR UPDATE TO authenticated USING (
-    owner_id = auth.uid() OR EXISTS (
-        SELECT 1 FROM public.organization_members 
-        WHERE organization_id = id AND user_id = auth.uid() AND role = 'ADMIN'
-    )
-);
+CREATE POLICY orgs_update_admin ON public.organizations FOR UPDATE TO authenticated USING (public.is_org_admin(id));
 
 -- organization_members RLS Policies
-CREATE POLICY org_members_select ON public.organization_members FOR SELECT TO authenticated USING (
-    organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid())
-);
-CREATE POLICY org_members_insert_admin ON public.organization_members FOR INSERT TO authenticated WITH CHECK (
-    EXISTS (
-        SELECT 1 FROM public.organization_members 
-        WHERE organization_id = organization_id AND user_id = auth.uid() AND role IN ('OWNER', 'ADMIN')
-    )
-);
+CREATE POLICY org_members_select ON public.organization_members FOR SELECT TO authenticated USING (user_id = auth.uid() OR public.is_org_member(organization_id));
+CREATE POLICY org_members_insert_admin ON public.organization_members FOR INSERT TO authenticated WITH CHECK (public.is_org_admin(organization_id));
+CREATE POLICY org_members_update_admin ON public.organization_members FOR UPDATE TO authenticated USING (public.is_org_admin(organization_id));
+CREATE POLICY org_members_delete_admin ON public.organization_members FOR DELETE TO authenticated USING (public.is_org_admin(organization_id));
 
 -- projects RLS Policies
 CREATE POLICY projects_select_all ON public.projects FOR SELECT TO authenticated USING (
     (deleted_at IS NULL) AND (
         (owner_id = auth.uid() AND organization_id IS NULL)
         OR
-        (organization_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM public.organization_members 
-            WHERE organization_id = projects.organization_id AND user_id = auth.uid()
-        ))
+        (organization_id IS NOT NULL AND public.is_org_member(organization_id))
     )
 );
 CREATE POLICY projects_insert ON public.projects FOR INSERT TO authenticated WITH CHECK (
     (owner_id = auth.uid() AND organization_id IS NULL)
     OR
-    (organization_id IS NOT NULL AND EXISTS (
-        SELECT 1 FROM public.organization_members 
-        WHERE organization_id = organization_id AND user_id = auth.uid()
-    ))
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
 );
-CREATE POLICY projects_update ON public.projects FOR UPDATE TO authenticated USING (owner_id = auth.uid());
+CREATE POLICY projects_update ON public.projects FOR UPDATE TO authenticated USING (
+    (owner_id = auth.uid() AND organization_id IS NULL)
+    OR
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
+);
 
 -- goals RLS Policies
 CREATE POLICY goals_select ON public.goals FOR SELECT TO authenticated USING (
     (deleted_at IS NULL) AND (
         (user_id = auth.uid() AND organization_id IS NULL)
         OR
-        (organization_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM public.organization_members 
-            WHERE organization_id = goals.organization_id AND user_id = auth.uid()
-        ))
+        (organization_id IS NOT NULL AND public.is_org_member(organization_id))
     )
 );
 CREATE POLICY goals_insert ON public.goals FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
-CREATE POLICY goals_update ON public.goals FOR UPDATE TO authenticated USING (user_id = auth.uid());
+CREATE POLICY goals_update ON public.goals FOR UPDATE TO authenticated USING (
+    (user_id = auth.uid() AND organization_id IS NULL)
+    OR
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
+);
 
 -- tasks RLS Policies
 CREATE POLICY tasks_select ON public.tasks FOR SELECT TO authenticated USING (
     (deleted_at IS NULL) AND (
         (user_id = auth.uid() AND organization_id IS NULL)
         OR
-        (organization_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM public.organization_members 
-            WHERE organization_id = tasks.organization_id AND user_id = auth.uid()
-        ))
+        (organization_id IS NOT NULL AND public.is_org_member(organization_id))
     )
 );
 CREATE POLICY tasks_insert ON public.tasks FOR INSERT TO authenticated WITH CHECK (
     (user_id = auth.uid() AND organization_id IS NULL)
     OR
-    (organization_id IS NOT NULL AND EXISTS (
-        SELECT 1 FROM public.organization_members 
-        WHERE organization_id = organization_id AND user_id = auth.uid()
-    ))
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
 );
-CREATE POLICY tasks_update ON public.tasks FOR UPDATE TO authenticated USING (user_id = auth.uid());
-CREATE POLICY tasks_delete ON public.tasks FOR DELETE TO authenticated USING (user_id = auth.uid());
+CREATE POLICY tasks_update ON public.tasks FOR UPDATE TO authenticated USING (
+    (user_id = auth.uid() AND organization_id IS NULL)
+    OR
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
+);
+CREATE POLICY tasks_delete ON public.tasks FOR DELETE TO authenticated USING (
+    (user_id = auth.uid() AND organization_id IS NULL)
+    OR
+    (organization_id IS NOT NULL AND public.is_org_member(organization_id))
+);
 
 -- activity_logs RLS Policies
 CREATE POLICY activity_logs_select ON public.activity_logs FOR SELECT TO authenticated USING (user_id = auth.uid());
