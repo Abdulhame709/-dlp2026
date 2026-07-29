@@ -1,4 +1,4 @@
-import { createClient } from '../database/server';
+import { createClient } from '../database/client';
 import { Logger } from '../logging/logger';
 
 export interface UserSession {
