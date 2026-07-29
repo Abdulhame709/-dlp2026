@@ -1,4 +1,4 @@
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 import { RoleGuard } from '@/core/auth/role-guard';
 import { Logger } from '@/core/logging/logger';
 import { EventBus } from '@/core/utils/event-bus';

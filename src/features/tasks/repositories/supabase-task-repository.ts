@@ -1,6 +1,6 @@
 import { Task, TaskStatus, TaskPriority } from '@/core/types/task-types';
 import { ITaskRepository } from './task-repository-interface';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseTaskRepository implements ITaskRepository {
   /**

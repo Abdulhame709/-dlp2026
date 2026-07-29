@@ -6,7 +6,7 @@ import {
   TimeAggregationReport, 
   TimeAggregationRange 
 } from './analytics-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
   private mapRowToEvent(row: any): AnalyticsEvent {

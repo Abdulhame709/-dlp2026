@@ -1,5 +1,5 @@
 import { SubscriptionTier, UserSubscription } from './billing-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseBillingRepository {
   private mapRowToEntity(row: any): UserSubscription {

@@ -1,4 +1,4 @@
-import { createClient } from '../database/server';
+import { createClient } from '../database/connection';
 import { Logger } from '../logging/logger';
 import { env } from '../config/env';
 

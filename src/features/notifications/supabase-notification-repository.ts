@@ -1,5 +1,5 @@
 import { NotificationItem, NotificationType } from './notification-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseNotificationRepository {
   private mapRowToEntity(row: any): NotificationItem {

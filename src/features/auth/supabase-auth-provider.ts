@@ -1,4 +1,4 @@
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 import { Logger } from '@/core/logging/logger';
 
 export class SupabaseAuthProvider {

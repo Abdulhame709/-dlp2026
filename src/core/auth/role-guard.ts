@@ -1,4 +1,4 @@
-import { createClient } from '../database/server';
+import { createClient } from '../database/connection';
 import { env } from '../config/env';
 
 export type UserRole = 'OWNER' | 'ADMIN' | 'MEMBER';

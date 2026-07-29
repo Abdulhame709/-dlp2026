@@ -1,5 +1,5 @@
 import { AIMemoryRecord, AIMemoryType } from '../memory/memory-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseAIMemoryRepository {
   private mapRowToRecord(row: any): AIMemoryRecord {

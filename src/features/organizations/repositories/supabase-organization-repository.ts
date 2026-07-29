@@ -1,4 +1,4 @@
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export interface OrganizationEntity {
   id: string;

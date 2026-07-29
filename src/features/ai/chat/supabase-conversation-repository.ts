@@ -1,6 +1,6 @@
 import { IConversationRepository } from './conversation-repository-interface';
 import { ConversationSession, ChatMessage } from './conversation-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseConversationRepository implements IConversationRepository {
   private mapRowToSession(row: any, messages: ChatMessage[] = []): ConversationSession {

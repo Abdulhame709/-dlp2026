@@ -1,4 +1,4 @@
-import { createClient } from '../database/server';
+import { createClient } from '../database/connection';
 
 export type Permission = 
   | 'CREATE_TASK' 

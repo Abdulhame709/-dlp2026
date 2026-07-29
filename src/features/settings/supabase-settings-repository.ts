@@ -1,6 +1,6 @@
 import { ISettingsRepository } from './settings-repository-interface';
 import { UserSettingsProfile } from './settings-types';
-import { createClient } from '@/core/database/server';
+import { createClient } from '@/core/database/connection';
 
 export class SupabaseSettingsRepository implements ISettingsRepository {
   private mapRowToEntity(profileRow: any): UserSettingsProfile {
