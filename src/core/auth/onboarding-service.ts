@@ -44,6 +44,10 @@ export class OnboardingService {
 
       const supabase = await createClient();
 
+      // Force session restoration to prevent race conditions where database requests
+      // are sent as anonymous before the browser client completes cookie/storage loading.
+      await supabase.auth.getSession();
+
       // 1. Save User Profile Setup
       const preferences = {
         theme_preference: profileData.theme,

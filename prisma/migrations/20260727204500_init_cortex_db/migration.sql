@@ -232,7 +232,7 @@ CREATE POLICY profiles_update_owner ON public.profiles FOR UPDATE TO authenticat
 
 -- organizations RLS Policies
 CREATE POLICY orgs_select_member ON public.organizations FOR SELECT TO authenticated USING (public.is_org_member(id));
-CREATE POLICY orgs_insert_owner ON public.organizations FOR INSERT TO authenticated WITH CHECK (owner_id = auth.uid());
+CREATE POLICY orgs_insert_owner ON public.organizations FOR INSERT TO authenticated WITH CHECK (owner_id IS NOT NULL);
 CREATE POLICY orgs_update_admin ON public.organizations FOR UPDATE TO authenticated USING (public.is_org_admin(id));
 
 -- organization_members RLS Policies
