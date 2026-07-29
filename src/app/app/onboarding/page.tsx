@@ -6,7 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { useTheme } from '@/shared/hooks/use-theme';
 import { AuthService } from '@/core/auth/auth-service';
-import { OnboardingService } from '@/core/auth/onboarding-service';
+import { submitOnboarding } from './actions';
 import { Sparkles, ArrowRight, Check, Loader2 } from 'lucide-react';
 
 export default function OnboardingPage() {
@@ -55,8 +55,8 @@ export default function OnboardingPage() {
     } else {
       setSubmitting(true);
       try {
-        // Complete onboarding via production-grade Onboarding Service
-        const res = await OnboardingService.completeOnboarding(
+        // Complete onboarding via production-grade Server Action (strictly server context)
+        const res = await submitOnboarding(
           userId,
           {
             fullName,
