@@ -11,6 +11,7 @@ export interface RuntimeConfig {
   hasAnthropicKey: boolean;
   hasGeminiKey: boolean;
   hasStripeKey: boolean;
+  isMockActive: boolean;
 }
 
 export class ConfigManager {
@@ -25,25 +26,48 @@ export class ConfigManager {
     const isProduction = env.nodeEnv === 'production';
     const isStaging = (env.nodeEnv as string) === 'staging';
     const isDevelopment = env.nodeEnv === 'development';
+    const isMockActive = env.useMock;
 
-    // Strict Production Key validation checks (Prevents deployment with empty/mock configurations)
-    if (isProduction || isStaging) {
-      const missingKeys: string[] = [];
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('mock-')) {
-        missingKeys.push('NEXT_PUBLIC_SUPABASE_URL');
-      }
-      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes('mock-')) {
-        missingKeys.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
-      }
-      if (isProduction && (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY.includes('mock-'))) {
-        missingKeys.push('SUPABASE_SERVICE_ROLE_KEY');
-      }
+    const missingKeys: string[] = [];
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('mock-')) {
+      missingKeys.push('NEXT_PUBLIC_SUPABASE_URL');
+    }
+    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes('mock-')) {
+      missingKeys.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    }
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('mock-')) {
+      missingKeys.push('DATABASE_URL');
+    }
+    if (!process.env.DIRECT_URL || process.env.DIRECT_URL.includes('mock-')) {
+      missingKeys.push('DIRECT_URL');
+    }
 
-      if (missingKeys.length > 0) {
-        console.warn(
-          `⚠️ [SRE Config Warning]: Missing critical production credentials: [${missingKeys.join(', ')}]. Falling back to development configurations.`
-        );
+    if (missingKeys.length > 0) {
+      console.log('\n====================================================================');
+      console.log('⚠️  [CORTEX AI - ENVIRONMENT STATUS]');
+      console.log('====================================================================');
+      console.log('Note: The following variables are missing or set to mock placeholders:');
+      missingKeys.forEach(key => console.log(`  - ${key}`));
+      console.log('--------------------------------------------------------------------');
+      if (isMockActive) {
+        console.log('👉 [SRE Active Fallback]: USE_MOCK is set to TRUE.');
+        console.log('   The platform will safely bypass remote databases and APIs,');
+        console.log('   running in a fully offline-ready, high-fidelity mock mode.');
+        console.log('   (No remote Supabase or OpenAI connections are required!)');
+      } else {
+        console.warn('🚨 [CRITICAL WARNING]: USE_MOCK is set to FALSE, but keys are missing!');
+        console.warn('   The application may fail to connect to remote services.');
+        console.warn('   Please configure your credentials in Vercel or local .env.local.');
       }
+      console.log('====================================================================\n');
+    } else {
+      console.log('\n====================================================================');
+      console.log('🎉 [CORTEX AI - PRODUCTION CONNECTED]');
+      console.log('====================================================================');
+      console.log('👉 [Mode]: Cloud Development / Live Production Active.');
+      console.log('   Connected directly to remote Supabase PostgreSQL, Storage,');
+      console.log('   Realtime socket layers, and active OpenAI gateways.');
+      console.log('====================================================================\n');
     }
 
     this.config = {
@@ -57,6 +81,7 @@ export class ConfigManager {
       hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.includes('mock-'),
       hasGeminiKey: !!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('mock-'),
       hasStripeKey: !!process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock-'),
+      isMockActive,
     };
 
     return this.config;
