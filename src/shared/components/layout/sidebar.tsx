@@ -31,7 +31,7 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Projects', arabicTitle: 'المشاريع', path: '/app/projects', icon: Folder },
   { title: 'Goals', arabicTitle: 'الأهداف', path: '/app/goals', icon: Target },
   { title: 'Calendar', arabicTitle: 'التقويم', path: '/app/calendar', icon: Calendar },
-  { title: 'AI Assistant', arabicTitle: 'مساعد الذكاء الاصطناعي', path: '/app/ai', icon: BrainCircuit },
+  { title: 'AI Assistant', arabicTitle: 'مساعد الذكاء الاصطناعي', path: '/app/ai-assistant', icon: BrainCircuit },
   { title: 'Settings', arabicTitle: 'الإعدادات والخصوصية', path: '/app/settings', icon: Settings },
 ];
 
