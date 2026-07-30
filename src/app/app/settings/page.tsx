@@ -3,9 +3,28 @@
 import * as React from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Settings, Shield, User, Bell, Database, Key, Sparkles, HelpCircle } from 'lucide-react';
+import { AuthService } from '@/core/auth/auth-service';
+import { Settings, Shield, User, Bell, Database, Key, Sparkles } from 'lucide-react';
 
 export default function SettingsPage() {
+  const [fullName, setFullName] = React.useState('Abdul Demo User');
+  const [email, setEmail] = React.useState('owner@cortexai.com');
+
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setFullName(user.fullName || 'Cortex User');
+          setEmail(user.email || 'user@cortexai.com');
+        }
+      } catch (err) {
+        console.error('Failed to load current user inside settings page:', err);
+      }
+    }
+    loadUser();
+  }, []);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in select-none p-6 text-foreground">
       {/* Header panel */}
@@ -45,14 +64,14 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <span className="text-xs font-bold text-muted-foreground">Full Name</span>
-                  <div className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs flex items-center">
-                    Abdul Demo User
+                  <div className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs flex items-center font-medium">
+                    {fullName}
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <span className="text-xs font-bold text-muted-foreground">Email Address</span>
-                  <div className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs flex items-center">
-                    owner@cortexai.com
+                  <div className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs flex items-center font-medium">
+                    {email}
                   </div>
                 </div>
               </div>
