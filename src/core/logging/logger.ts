@@ -44,7 +44,7 @@ export class Logger {
     try {
       const userId = meta.userId;
       if (userId) {
-        const { createClient } = await import('../database/server');
+        const { createClient } = await import('../database/connection');
         const supabase = await createClient();
         await supabase
           .from('activity_logs')
