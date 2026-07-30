@@ -14,7 +14,10 @@ import {
   BrainCircuit, 
   Settings, 
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Building,
+  Bell,
+  CreditCard
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -32,6 +35,9 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Goals', arabicTitle: 'الأهداف', path: '/app/goals', icon: Target },
   { title: 'Calendar', arabicTitle: 'التقويم', path: '/app/calendar', icon: Calendar },
   { title: 'AI Assistant', arabicTitle: 'مساعد الذكاء الاصطناعي', path: '/app/ai-assistant', icon: BrainCircuit },
+  { title: 'Organizations', arabicTitle: 'الشركات ومساحات العمل', path: '/app/organizations', icon: Building },
+  { title: 'Notifications', arabicTitle: 'التنبيهات والإشعارات', path: '/app/notifications', icon: Bell },
+  { title: 'Billing', arabicTitle: 'الاشتراكات والمدفوعات', path: '/app/billing', icon: CreditCard },
   { title: 'Settings', arabicTitle: 'الإعدادات والخصوصية', path: '/app/settings', icon: Settings },
 ];
 
