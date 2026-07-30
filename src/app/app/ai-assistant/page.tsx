@@ -4,9 +4,9 @@ import * as React from 'react';
 import { ConversationSession, ChatMessage } from '@/features/ai/chat/conversation-types';
 import { ConversationService } from '@/features/ai/chat/conversation-service';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
-import { AIContextManager } from '@/features/ai/core/context-manager';
-import { LongTermMemoryManager } from '@/features/ai/memory/long-term-memory';
+import { AuthService } from '@/core/auth/auth-service';
 import { AIMemoryRecord } from '@/features/ai/memory/memory-types';
+import { LongTermMemoryManager } from '@/features/ai/memory/long-term-memory';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -16,26 +16,22 @@ import {
   BrainCircuit, 
   Plus, 
   Trash2, 
-  Archive, 
-  ThumbsUp, 
-  ThumbsDown, 
   Send, 
   Sparkles, 
   Info, 
-  ArrowRight,
   TrendingUp,
   CheckCircle,
-  HelpCircle,
-  Flame,
   User,
   Building,
   Calendar,
   Layers,
-  X
+  X,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 
 export default function AIAssistantPage() {
-  const demoUserId = '11111111-1111-1111-1111-111111111111';
+  const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
 
   // 1. Core State
   const [sessions, setSessions] = React.useState<ConversationSession[]>([]);
@@ -57,11 +53,26 @@ export default function AIAssistantPage() {
   // 3. Context Visualization State
   const [showContextVisualizer, setShowContextVisualizer] = React.useState(true);
 
-  // Load Sessions and Memories on Mount
+  // Load current user details on mount to resolve session dynamically
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setUserId(user.id);
+        }
+      } catch (err) {
+        console.error('Failed to resolve current user session during AI Assistant mount:', err);
+      }
+    }
+    loadUser();
+  }, []);
+
+  // Load Sessions and Memories on Mount dynamically based on the resolved user ID
   const loadSessionsAndMemories = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const list = await ConversationService.getUserSessions(demoUserId);
+      const list = await ConversationService.getUserSessions(userId);
       setSessions(list);
       if (list.length > 0) {
         const detailed = await ConversationService.getSession(list[0].id);
@@ -69,12 +80,12 @@ export default function AIAssistantPage() {
       }
 
       // Load or Seed long-term memories
-      let activeMemories = await LongTermMemoryManager.getMemories(demoUserId);
+      let activeMemories = await LongTermMemoryManager.getMemories(userId);
       if (activeMemories.length === 0) {
-        await LongTermMemoryManager.saveMemory(demoUserId, 'WORK_PATTERN', 'Prefers morning deep focus slots (09:00 - 12:00)', 8);
-        await LongTermMemoryManager.saveMemory(demoUserId, 'PREFERENCE', 'Works significantly better with detailed checklists', 7);
-        await LongTermMemoryManager.saveMemory(demoUserId, 'BEHAVIOR', 'Focuses best inside 90-minute blocks', 6);
-        activeMemories = await LongTermMemoryManager.getMemories(demoUserId);
+        await LongTermMemoryManager.saveMemory(userId, 'WORK_PATTERN', 'Prefers morning deep focus slots (09:00 - 12:00)', 8);
+        await LongTermMemoryManager.saveMemory(userId, 'PREFERENCE', 'Works significantly better with detailed checklists', 7);
+        await LongTermMemoryManager.saveMemory(userId, 'BEHAVIOR', 'Focuses best inside 90-minute blocks', 6);
+        activeMemories = await LongTermMemoryManager.getMemories(userId);
       }
       setMemories(activeMemories);
     } catch (err) {
@@ -82,7 +93,7 @@ export default function AIAssistantPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   React.useEffect(() => {
     loadSessionsAndMemories();
@@ -92,7 +103,7 @@ export default function AIAssistantPage() {
   const handleStartNewSession = async () => {
     try {
       const newSession = await ConversationService.startNewSession(
-        demoUserId,
+        userId,
         `AI Chat Session #${sessions.length + 1}`,
         'General'
       );
@@ -112,12 +123,12 @@ export default function AIAssistantPage() {
     setIsThinking(true);
 
     try {
-      // 1. Save user prompt locally and inside DB mock
+      // 1. Save user prompt locally and inside DB
       const userMsg = await ConversationService.saveMessage(activeSession.id, 'USER', userMessageContent);
       setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), userMsg] } : null);
 
-      // 2. Dispatch query to AI Assistant Service / Mock AI Provider
-      const response = await AIAssistantService.getCoachingAdvice(demoUserId);
+      // 2. Dispatch query to AI Assistant Service
+      const response = await AIAssistantService.getCoachingAdvice(userId);
       
       // 3. Save AI Response
       const aiMsg = await ConversationService.saveMessage(activeSession.id, 'ASSISTANT', response.coachingAdvice);
@@ -146,7 +157,7 @@ export default function AIAssistantPage() {
   // Delete Memory item
   const handleDeleteMemory = async (memoryId: string) => {
     try {
-      const success = await LongTermMemoryManager.deleteMemory(demoUserId, memoryId);
+      const success = await LongTermMemoryManager.deleteMemory(userId, memoryId);
       if (success) {
         setMemories(prev => prev.filter(m => m.id !== memoryId));
       }
@@ -177,7 +188,7 @@ export default function AIAssistantPage() {
     setIsFeatureLoading('PRIORITIZE');
     try {
       const response = await AIAssistantService.prioritizeTask(
-        demoUserId,
+        userId,
         '66666666-6666-6666-6666-666666666661',
         'Deploy Database Schema with RLS',
         'Setting up Supabase RLS'
@@ -192,7 +203,7 @@ export default function AIAssistantPage() {
   const triggerPlanner = async () => {
     setIsFeatureLoading('PLANNER');
     try {
-      const response = await AIAssistantService.generateDailyPlan(demoUserId);
+      const response = await AIAssistantService.generateDailyPlan(userId);
       setAiDailyPlan(response);
     } finally {
       setIsFeatureLoading(null);
@@ -204,7 +215,7 @@ export default function AIAssistantPage() {
     setIsFeatureLoading('BREAKDOWN');
     try {
       const response = await AIAssistantService.breakdownTask(
-        demoUserId,
+        userId,
         '66666666-6666-6666-6666-666666666661',
         'Deploy Database Schema with RLS',
         'Audit RLS guidelines'
@@ -219,7 +230,7 @@ export default function AIAssistantPage() {
   const triggerCoach = async () => {
     setIsFeatureLoading('COACH');
     try {
-      const response = await AIAssistantService.getCoachingAdvice(demoUserId);
+      const response = await AIAssistantService.getCoachingAdvice(userId);
       setAiCoachAdvice(response);
     } finally {
       setIsFeatureLoading(null);
@@ -396,7 +407,7 @@ export default function AIAssistantPage() {
                   onClick={() => handleDeleteMemory(mem.id)}
                   className="text-muted-foreground hover:text-error opacity-60 hover:opacity-100 p-0.5"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
@@ -466,7 +477,7 @@ export default function AIAssistantPage() {
           {/* Tool C: AI Productivity Coach */}
           <Card className="p-4 space-y-3">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-secondary">
-              <TrendingUp className="h-4 w-4" /> AI Productivity Coach
+              <TrendingUp className="h-4.5 w-4.5 text-secondary" /> AI Productivity Coach
             </h3>
             <p className="text-[10px] text-muted-foreground">Get behavioral feedback from SRE telemetry.</p>
             <Button 

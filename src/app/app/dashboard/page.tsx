@@ -7,6 +7,7 @@ import { Card } from '@/shared/components/ui/card';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { AnalyticsService } from '@/features/analytics/analytics-service';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
+import { AuthService } from '@/core/auth/auth-service';
 import { cn } from '@/lib/utils';
 import { 
   Sparkles, 
@@ -24,19 +25,32 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const demoUserId = '11111111-1111-1111-1111-111111111111';
-
-  // State bindings
+  const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
   const [isLoading, setIsLoading] = React.useState(true);
   const [metrics, setMetrics] = React.useState<any>(null);
   const [coachAdvice, setCoachAdvice] = React.useState<any>(null);
 
-  // Load analytics and AI coach data on mount
+  // Load current user details on mount to resolve session dynamically
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setUserId(user.id);
+        }
+      } catch (err) {
+        console.error('Failed to resolve current user session during dashboard mount:', err);
+      }
+    }
+    loadUser();
+  }, []);
+
+  // Load analytics and AI coach data dynamically based on the resolved user ID
   const loadDashboardData = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const resolvedMetrics = await AnalyticsService.getMetrics(demoUserId);
-      const resolvedCoach = await AIAssistantService.getCoachingAdvice(demoUserId);
+      const resolvedMetrics = await AnalyticsService.getMetrics(userId);
+      const resolvedCoach = await AIAssistantService.getCoachingAdvice(userId);
       
       setMetrics(resolvedMetrics);
       setCoachAdvice(resolvedCoach);
@@ -45,7 +59,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   React.useEffect(() => {
     loadDashboardData();

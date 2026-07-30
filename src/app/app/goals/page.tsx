@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { AIGoalAnalyzer, GoalAnalysis, GeneratedProject, GeneratedTasks, Timeline } from '@/features/ai/core/ai-goal-analyzer';
 import { TaskService } from '@/features/tasks/services/task-service';
+import { AuthService } from '@/core/auth/auth-service';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -20,8 +21,8 @@ import {
 } from 'lucide-react';
 
 export default function GoalsPage() {
-  const demoUserId = '11111111-1111-1111-1111-111111111111';
-
+  const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
+  
   // State bindings
   const [goalTitle, setGoalTitle] = React.useState('Launch Cortex AI SaaS in 3 months');
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
@@ -33,6 +34,21 @@ export default function GoalsPage() {
   const [tasksData, setTasksData] = React.useState<GeneratedTasks | null>(null);
   const [priorityData, setPriorityData] = React.useState<any>(null);
   const [timelineData, setTimelineData] = React.useState<Timeline | null>(null);
+
+  // Load current user details on mount to resolve session dynamically
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setUserId(user.id);
+        }
+      } catch (err) {
+        console.error('Failed to resolve current user session during goals mount:', err);
+      }
+    }
+    loadUser();
+  }, []);
 
   const handleRunProductIntelligence = async () => {
     if (!goalTitle.trim()) return;
@@ -48,23 +64,23 @@ export default function GoalsPage() {
 
     try {
       // 1. Execute Goal Analysis
-      const goalAnalysis = await AIGoalAnalyzer.analyzeGoal(demoUserId, goalTitle, 'Core SaaS Launch');
+      const goalAnalysis = await AIGoalAnalyzer.analyzeGoal(userId, goalTitle, 'Core SaaS Launch');
       setAnalysis(goalAnalysis);
 
       // 2. Deconstruct Goal into Projects and Milestones
       setStatusMessage('Deconstructing goal into projects and milestones...');
-      const projGen = await AIGoalAnalyzer.generateProjects(demoUserId, goalTitle);
+      const projGen = await AIGoalAnalyzer.generateProjects(userId, goalTitle);
       setProjectsData(projGen);
 
       // 3. Break down Milestones into Executable Tasks
       setStatusMessage('Breaking down milestones into executable tasks...');
-      const taskGen = await AIGoalAnalyzer.breakdownMilestoneTasks(demoUserId, 'Schema Migration');
+      const taskGen = await AIGoalAnalyzer.breakdownMilestoneTasks(userId, 'Schema Migration');
       setTasksData(taskGen);
 
       // 4. Save AI-generated tasks to TaskService (Connecting Goals -> Projects -> Tasks Flow)
       setStatusMessage('Saving AI-generated tasks to your workspace...');
       for (const t of taskGen.tasks) {
-        await TaskService.createTask(demoUserId, {
+        await TaskService.createTask(userId, {
           title: t.title,
           description: t.description,
           priority: t.priority,
@@ -74,12 +90,12 @@ export default function GoalsPage() {
 
       // 5. Calculate intelligent priorities
       setStatusMessage('Calculating priority scores and confidence...');
-      const priority = await AIGoalAnalyzer.calculatePriority(demoUserId, 'Deploy PostgreSQL tables on Supabase', 9, 10);
+      const priority = await AIGoalAnalyzer.calculatePriority(userId, 'Deploy PostgreSQL tables on Supabase', 9, 10);
       setPriorityData(priority);
 
       // 6. Generate Timeline
       setStatusMessage('Generating optimal execution timeline...');
-      const timeline = await AIGoalAnalyzer.generateTimeline(demoUserId, ['Deploy PostgreSQL tables', 'Setup Auth Provider', 'Audit RLS policies']);
+      const timeline = await AIGoalAnalyzer.generateTimeline(userId, ['Deploy PostgreSQL tables', 'Setup Auth Provider', 'Audit RLS policies']);
       setTimelineData(timeline);
 
       setStatusMessage('Roadmap successfully compiled and saved!');

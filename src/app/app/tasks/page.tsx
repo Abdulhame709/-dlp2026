@@ -5,6 +5,7 @@ import { Task, TaskStatus, TaskPriority, ChecklistItem, Comment, Activity } from
 import { TaskService } from '@/features/tasks/services/task-service';
 import { TaskStateMachine } from '@/features/tasks/services/task-state-machine';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
+import { AuthService } from '@/core/auth/auth-service';
 import { useKeyboardShortcuts } from '@/shared/hooks/use-shortcuts';
 import { SyncManager } from '@/core/utils/sync-manager';
 import { Widget } from '@/shared/components/dashboard/widget';
@@ -40,6 +41,8 @@ type TaskView = 'LIST' | 'KANBAN' | 'CALENDAR' | 'TIMELINE';
 type TaskFilterType = 'ALL' | 'TODAY' | 'UPCOMING' | 'PRIORITY' | 'COMPLETED';
 
 export default function TasksPage() {
+  const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
+  
   // Core Task State
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -71,20 +74,33 @@ export default function TasksPage() {
   const [checklistInput, setChecklistInput] = React.useState('');
   const [commentInput, setCommentInput] = React.useState('');
 
-  const demoUserId = '11111111-1111-1111-1111-111111111111';
+  // Load current user details on mount to resolve session dynamically
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setUserId(user.id);
+        }
+      } catch (err) {
+        console.error('Failed to resolve current user session during tasks mount:', err);
+      }
+    }
+    loadUser();
+  }, []);
 
-  // Load Tasks on Mount
+  // Load Tasks dynamically based on active user ID
   const loadTasks = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetched = await TaskService.getUserTasks(demoUserId);
+      const fetched = await TaskService.getUserTasks(userId);
       setTasks(fetched);
     } catch (err) {
       console.error('Failed to load tasks:', err);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   React.useEffect(() => {
     loadTasks();
@@ -95,7 +111,7 @@ export default function TasksPage() {
     const handleOnline = async () => {
       await SyncManager.syncPendingOperations(async (op) => {
         if (op.action === 'CREATE') {
-          await TaskService.createTask(demoUserId, op.payload);
+          await TaskService.createTask(userId, op.payload);
         } else if (op.action === 'UPDATE') {
           await TaskService.updateTask(op.payload.id, op.payload);
         } else if (op.action === 'DELETE') {
@@ -108,7 +124,7 @@ export default function TasksPage() {
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [loadTasks]);
+  }, [loadTasks, userId]);
 
   // Keyboard Shortcuts Mapping (N, E, Delete, Ctrl+Enter)
   useKeyboardShortcuts({
@@ -141,7 +157,7 @@ export default function TasksPage() {
     const tempId = `task-temp-${Date.now()}`;
     const tempTask: Task = {
       id: tempId,
-      userId: demoUserId,
+      userId: userId,
       title: newTitle,
       description: newDesc,
       status: newStatus,
@@ -161,7 +177,7 @@ export default function TasksPage() {
     }
 
     try {
-      await TaskService.createTask(demoUserId, payload);
+      await TaskService.createTask(userId, payload);
     } catch {
       // Revert on error
       setTasks(prev => prev.filter(t => t.id !== tempId));
@@ -232,7 +248,7 @@ export default function TasksPage() {
     setAiTaskSuggestions(null);
     try {
       const response = await AIAssistantService.analyzeTaskIntelligence(
-        demoUserId,
+        userId,
         selectedTask.title,
         selectedTask.description || ''
       );
@@ -309,8 +325,8 @@ export default function TasksPage() {
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       taskId: selectedTask.id,
-      userId: demoUserId,
-      fullName: 'Abdul Hameed',
+      userId: userId,
+      fullName: 'Cortex User',
       content: commentInput,
       createdAt: new Date(),
     };
