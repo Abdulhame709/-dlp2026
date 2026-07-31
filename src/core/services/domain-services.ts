@@ -1,15 +1,30 @@
 import { Logger } from '../logging/logger';
+import { DependencyInjector } from '../config/dependency-injector';
 
 export class ProjectService {
-  static async createProject(userId: string, orgId: string | null, name: string): Promise<any> {
+  private static getRepo() {
+    return DependencyInjector.getProjectRepository();
+  }
+
+  static async createProject(userId: string, orgId: string | null, name: string, description = ''): Promise<any> {
     await Logger.info('Project Created', { userId, orgId, name });
-    return { id: `project-mock-${Date.now()}`, name, ownerId: userId, organizationId: orgId };
+    return this.getRepo().createProject(userId, { name, description, organizationId: orgId });
   }
 
   static async getProjects(userId: string): Promise<any[]> {
-    return [
-      { id: '44444444-4444-4444-4444-444444444444', name: 'Cortex Platform Launch', ownerId: userId },
-    ];
+    return this.getRepo().getProjects(userId);
+  }
+
+  static async getProjectById(id: string): Promise<any | null> {
+    return this.getRepo().getProjectById(id);
+  }
+
+  static async updateProject(id: string, name: string, description = '', status?: string): Promise<any | null> {
+    return this.getRepo().updateProject(id, { name, description, status });
+  }
+
+  static async deleteProject(id: string): Promise<boolean> {
+    return this.getRepo().deleteProject(id);
   }
 }
 
