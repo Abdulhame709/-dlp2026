@@ -29,15 +29,29 @@ export class ProjectService {
 }
 
 export class GoalService {
-  static async createGoal(userId: string, title: string, progress = 0): Promise<any> {
+  private static getRepo() {
+    return DependencyInjector.getGoalRepository();
+  }
+
+  static async createGoal(userId: string, title: string, progress = 0, description = ''): Promise<any> {
     await Logger.info('Goal Created', { userId, title });
-    return { id: `goal-mock-${Date.now()}`, title, userId, progress };
+    return this.getRepo().createGoal(userId, { title, progress, description });
   }
 
   static async getGoals(userId: string): Promise<any[]> {
-    return [
-      { id: '55555555-5555-5555-5555-555555555554', title: 'Launch Cortex MVP', progress: 45, userId },
-    ];
+    return this.getRepo().getGoals(userId);
+  }
+
+  static async getGoalById(id: string): Promise<any | null> {
+    return this.getRepo().getGoalById(id);
+  }
+
+  static async updateGoal(id: string, title: string, progress: number, description = '', status?: string): Promise<any | null> {
+    return this.getRepo().updateGoal(id, { title, progress, description, status });
+  }
+
+  static async deleteGoal(id: string): Promise<boolean> {
+    return this.getRepo().deleteGoal(id);
   }
 }
 

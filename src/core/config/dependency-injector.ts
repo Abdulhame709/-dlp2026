@@ -11,6 +11,9 @@ import { MockConversationRepository } from '@/features/ai/chat/mock-conversation
 import { IProjectRepository } from '@/features/projects/repositories/project-repository-interface';
 import { MockProjectRepository } from '@/features/projects/repositories/mock-project-repository';
 
+import { IGoalRepository } from '@/features/goals/repositories/goal-repository-interface';
+import { MockGoalRepository } from '@/features/goals/repositories/mock-goal-repository';
+
 export class DependencyInjector {
   /**
    * Dynamically resolves the active Task Repository implementation
@@ -55,5 +58,16 @@ export class DependencyInjector {
     }
     const { SupabaseProjectRepository } = require('@/features/projects/repositories/supabase-project-repository');
     return new SupabaseProjectRepository();
+  }
+
+  /**
+   * Dynamically resolves the active Goal Repository implementation
+   */
+  static getGoalRepository(): IGoalRepository {
+    if (env.useMock) {
+      return new MockGoalRepository();
+    }
+    const { SupabaseGoalRepository } = require('@/features/goals/repositories/supabase-goal-repository');
+    return new SupabaseGoalRepository();
   }
 }

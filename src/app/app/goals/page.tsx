@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { AIGoalAnalyzer, GoalAnalysis, GeneratedProject, GeneratedTasks, Timeline } from '@/features/ai/core/ai-goal-analyzer';
 import { TaskService } from '@/features/tasks/services/task-service';
+import { GoalService } from '@/core/services/domain-services';
 import { AuthService } from '@/core/auth/auth-service';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
@@ -17,18 +18,21 @@ import {
   Calendar, 
   AlertTriangle, 
   TrendingUp,
-  ArrowRight
+  X,
+  Trash2
 } from 'lucide-react';
 
 export default function GoalsPage() {
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
-  
-  // State bindings
+  const [goals, setGoals] = React.useState<any[]>([]);
+  const [goalsLoading, setGoalsLoading] = React.useState(true);
+
+  // State bindings for AI Generator
   const [goalTitle, setGoalTitle] = React.useState('Launch Cortex AI SaaS in 3 months');
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
   const [statusMessage, setStatusMessage] = React.useState('');
 
-  // Result States
+  // Result States for AI Assistant Roadmap
   const [analysis, setAnalysis] = React.useState<GoalAnalysis | null>(null);
   const [projectsData, setProjectsData] = React.useState<GeneratedProject | null>(null);
   const [tasksData, setTasksData] = React.useState<GeneratedTasks | null>(null);
@@ -50,6 +54,24 @@ export default function GoalsPage() {
     loadUser();
   }, []);
 
+  // Fetch live goals from GoalService
+  const loadGoals = React.useCallback(async () => {
+    setGoalsLoading(true);
+    try {
+      const fetched = await GoalService.getGoals(userId);
+      setGoals(fetched);
+    } catch (err) {
+      console.error('Failed to load goals from database:', err);
+    } finally {
+      setGoalsLoading(false);
+    }
+  }, [userId]);
+
+  React.useEffect(() => {
+    loadGoals();
+  }, [loadGoals]);
+
+  // Handle run AI product intelligence and automatically create Goals, Projects, and Tasks
   const handleRunProductIntelligence = async () => {
     if (!goalTitle.trim()) return;
     setIsAnalyzing(true);
@@ -63,21 +85,24 @@ export default function GoalsPage() {
     setTimelineData(null);
 
     try {
-      // 1. Execute Goal Analysis
+      // 1. Create the Goal persistently in the PostgreSQL Database
+      const savedGoal = await GoalService.createGoal(userId, goalTitle, 0, 'Automatically generated via AI Product Intelligence');
+
+      // 2. Execute Goal Analysis
       const goalAnalysis = await AIGoalAnalyzer.analyzeGoal(userId, goalTitle, 'Core SaaS Launch');
       setAnalysis(goalAnalysis);
 
-      // 2. Deconstruct Goal into Projects and Milestones
+      // 3. Deconstruct Goal into Projects and Milestones
       setStatusMessage('Deconstructing goal into projects and milestones...');
       const projGen = await AIGoalAnalyzer.generateProjects(userId, goalTitle);
       setProjectsData(projGen);
 
-      // 3. Break down Milestones into Executable Tasks
+      // 4. Break down Milestones into Executable Tasks
       setStatusMessage('Breaking down milestones into executable tasks...');
       const taskGen = await AIGoalAnalyzer.breakdownMilestoneTasks(userId, 'Schema Migration');
       setTasksData(taskGen);
 
-      // 4. Save AI-generated tasks to TaskService (Connecting Goals -> Projects -> Tasks Flow)
+      // 5. Save AI-generated tasks persistently to live database
       setStatusMessage('Saving AI-generated tasks to your workspace...');
       for (const t of taskGen.tasks) {
         await TaskService.createTask(userId, {
@@ -85,15 +110,16 @@ export default function GoalsPage() {
           description: t.description,
           priority: t.priority,
           status: 'INBOX',
+          goalId: savedGoal.id,
         });
       }
 
-      // 5. Calculate intelligent priorities
+      // 6. Calculate intelligent priorities
       setStatusMessage('Calculating priority scores and confidence...');
       const priority = await AIGoalAnalyzer.calculatePriority(userId, 'Deploy PostgreSQL tables on Supabase', 9, 10);
       setPriorityData(priority);
 
-      // 6. Generate Timeline
+      // 7. Generate Timeline
       setStatusMessage('Generating optimal execution timeline...');
       const timeline = await AIGoalAnalyzer.generateTimeline(userId, ['Deploy PostgreSQL tables', 'Setup Auth Provider', 'Audit RLS policies']);
       setTimelineData(timeline);
@@ -104,6 +130,20 @@ export default function GoalsPage() {
       setStatusMessage('Execution failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
+      loadGoals();
+    }
+  };
+
+  // Handle Goal Deletion (Soft delete / Archive)
+  const handleDeleteGoal = async (id: string) => {
+    // Optimistic delete
+    setGoals(prev => prev.filter(g => g.id !== id));
+    try {
+      await GoalService.deleteGoal(id);
+    } catch (err) {
+      console.error('Failed to delete goal:', err);
+    } finally {
+      loadGoals();
     }
   };
 
@@ -144,7 +184,56 @@ export default function GoalsPage() {
         )}
       </div>
 
-      {/* 2. Loading Placeholder Skeletons */}
+      {/* 1.5 Live Active Goals Dashboard List */}
+      <div className="space-y-4">
+        <div className="flex flex-col select-none">
+          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" /> Active Objectives & Goals
+          </h2>
+          <p className="text-[10px] text-muted-foreground font-arabic">الأهداف الاستراتيجية المسجلة ومؤشرات التقدم</p>
+        </div>
+
+        {goalsLoading ? (
+          <div className="space-y-2 select-none">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </div>
+        ) : goals.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center select-none border border-dashed border-border rounded-xl">
+            <Target className="h-8 w-8 text-muted-foreground/60 mb-2" />
+            <p className="text-xs text-muted-foreground">No active goals found. Use the analyzer above to seed your first goal.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {goals.map((goal) => (
+              <Card key={goal.id} className="p-4 border border-border bg-card rounded-xl flex items-center justify-between gap-4 group">
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <span className="text-xs font-bold text-foreground truncate block">{goal.title}</span>
+                  {goal.description && (
+                    <p className="text-[10px] text-muted-foreground truncate">{goal.description}</p>
+                  )}
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-2 pt-1 select-none">
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden border border-border">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${goal.progress || 0}%` }} />
+                    </div>
+                    <span className="text-[9px] font-bold text-primary shrink-0">{goal.progress || 0}% Done</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => handleDeleteGoal(goal.id)}
+                  className="text-muted-foreground hover:text-error opacity-0 group-hover:opacity-100 p-1 rounded transition-all cursor-pointer shrink-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 2. Loading Placeholder Skeletons for AI deconstruction */}
       {isAnalyzing && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 select-none">
           <Card className="p-5 space-y-4">

@@ -1,19 +1,7 @@
 import { createClient } from '@/core/database/connection';
+import { IGoalRepository, GoalEntity } from './goal-repository-interface';
 
-export interface GoalEntity {
-  id: string;
-  userId: string;
-  organizationId?: string | null;
-  title: string;
-  description?: string | null;
-  deadline?: Date | null;
-  status: string;
-  progress: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export class SupabaseGoalRepository {
+export class SupabaseGoalRepository implements IGoalRepository {
   private mapRowToEntity(row: any): GoalEntity {
     return {
       id: row.id,
@@ -23,9 +11,10 @@ export class SupabaseGoalRepository {
       description: row.description,
       deadline: row.deadline ? new Date(row.deadline) : null,
       status: row.status,
-      progress: row.progress,
+      progress: row.progress || 0,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
     };
   }
 
@@ -41,14 +30,29 @@ export class SupabaseGoalRepository {
     return (data || []).map(row => this.mapRowToEntity(row));
   }
 
-  async createGoal(userId: string, title: string, description = ''): Promise<GoalEntity> {
+  async getGoalById(id: string): Promise<GoalEntity | null> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (error || !data) return null;
+    return this.mapRowToEntity(data);
+  }
+
+  async createGoal(userId: string, goalData: Partial<GoalEntity>): Promise<GoalEntity> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('goals')
       .insert({
-        title,
-        description,
+        title: goalData.title || 'Untitled Goal',
+        description: goalData.description || '',
+        progress: goalData.progress || 0,
         user_id: userId,
+        organization_id: goalData.organizationId || null,
         created_by: userId,
       })
       .select()
@@ -56,5 +60,34 @@ export class SupabaseGoalRepository {
 
     if (error || !data) throw new Error(`GOAL_INSERT_FAILED: ${error?.message || 'Empty response'}`);
     return this.mapRowToEntity(data);
+  }
+
+  async updateGoal(id: string, goalData: Partial<GoalEntity>): Promise<GoalEntity | null> {
+    const supabase = await createClient();
+    const dbRow: Record<string, any> = {};
+    if (goalData.title !== undefined) dbRow.title = goalData.title;
+    if (goalData.description !== undefined) dbRow.description = goalData.description;
+    if (goalData.progress !== undefined) dbRow.progress = goalData.progress;
+    if (goalData.status !== undefined) dbRow.status = goalData.status;
+
+    const { data, error } = await supabase
+      .from('goals')
+      .update(dbRow)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) throw new Error(`GOAL_UPDATE_FAILED: ${error?.message || 'Update failed'}`);
+    return this.mapRowToEntity(data);
+  }
+
+  async deleteGoal(id: string): Promise<boolean> {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('goals')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    return !error;
   }
 }
