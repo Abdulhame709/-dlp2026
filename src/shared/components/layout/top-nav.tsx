@@ -4,13 +4,59 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/shared/hooks/use-theme';
 import { useLayoutStore } from '@/shared/stores/layout-store';
-import { Sun, Moon, Bell, Search, LogOut, User, Building, Shield } from 'lucide-react';
+import { AuthService } from '@/core/auth/auth-service';
+import { createClient } from '@/core/database/connection';
+import { Sun, Moon, Bell, Search, Building, Languages, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export function TopNav() {
   const pathname = usePathname();
   const { toggleTheme, theme } = useTheme();
   const { activeWorkspaceId, setActiveWorkspaceId } = useLayoutStore();
+
+  const [lang, setLang] = React.useState('en');
+  const [updatingLang, setUpdatingLang] = React.useState(false);
+
+  // Load language preference on mount
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLang(localStorage.getItem('language') || 'en');
+    }
+  }, []);
+
+  // Handle Dynamic Language Switch (with Database Sync & full RTL/LTR document flip)
+  const handleLanguageSwitch = async () => {
+    const nextLang = lang === 'en' ? 'ar' : 'en';
+    setUpdatingLang(true);
+    
+    try {
+      // 1. Persist locally
+      localStorage.setItem('language', nextLang);
+      setLang(nextLang);
+
+      // 2. Apply direction and locale to HTML root node
+      const html = document.documentElement;
+      html.dir = nextLang === 'ar' ? 'rtl' : 'ltr';
+      html.lang = nextLang;
+
+      // 3. Persist to database profile in live mode
+      const user = await AuthService.getCurrentUser();
+      if (user && !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('mock-')) {
+        const supabase = await createClient();
+        await supabase
+          .from('profiles')
+          .update({ language: nextLang })
+          .eq('id', user.id);
+      }
+
+      // 4. Force window reload to synchronize layout states globally
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to sync language preference to database:', err);
+    } finally {
+      setUpdatingLang(false);
+    }
+  };
 
   // Create clean breadcrumbs from path
   const pathSegments = pathname.split('/').filter(Boolean);
@@ -64,6 +110,23 @@ export function TopNav() {
             ))}
           </select>
         </div>
+
+        {/* Dynamic i18n Language Switcher */}
+        <button
+          onClick={handleLanguageSwitch}
+          disabled={updatingLang}
+          className="flex h-9 px-3 items-center justify-center rounded-lg border border-border hover:bg-muted text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer transition-colors gap-1.5"
+          aria-label="Switch Language"
+        >
+          {updatingLang ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <Languages className="h-4 w-4" />
+              <span>{lang === 'en' ? 'العربية' : 'English'}</span>
+            </>
+          )}
+        </button>
 
         {/* Theme Light/Dark Mode Switcher */}
         <button

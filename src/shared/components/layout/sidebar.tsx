@@ -50,13 +50,18 @@ export function Sidebar() {
   const { isSidebarCollapsed, toggleSidebar } = useLayoutStore();
   const [role, setRole] = React.useState<string>('OWNER'); // Default to OWNER for full access / mock
   const [dir, setDir] = React.useState<'ltr' | 'rtl'>('ltr');
+  const [lang, setLang] = React.useState<string>('en');
+  const [isMounted, setIsMounted] = React.useState(false);
 
-  // Load active user role and language layout direction on mount
+  // Load active user role and language layout direction on mount safely (Client-only)
   React.useEffect(() => {
+    setIsMounted(true);
+
     async function loadIdentityAndLayout() {
       try {
         // Sync language layout
         const activeLanguage = localStorage.getItem('language') || 'en';
+        setLang(activeLanguage);
         setDir(activeLanguage === 'ar' ? 'rtl' : 'ltr');
 
         const user = await AuthService.getCurrentUser();
@@ -85,6 +90,17 @@ export function Sidebar() {
     }
     loadIdentityAndLayout();
   }, []);
+
+  // Return safe skeleton container during SSR rendering to prevent React removeChild/hydration crashes
+  if (!isMounted) {
+    return (
+      <aside className="fixed top-0 bottom-0 left-0 z-20 flex flex-col w-16 border-r border-border bg-card text-foreground select-none animate-pulse">
+        <div className="flex h-16 items-center justify-center border-b border-border">
+          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center font-bold text-lg">C</div>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -136,15 +152,19 @@ export function Sidebar() {
                 <Icon className="h-5 w-5 shrink-0" />
                 {!isSidebarCollapsed && (
                   <div className="flex flex-col text-left">
-                    <span className="text-sm font-medium leading-none">{item.title}</span>
-                    <span className="text-[10px] opacity-75 font-arabic mt-0.5">{item.arabicTitle}</span>
+                    <span className="text-sm font-medium leading-none">
+                      {lang === 'ar' ? item.arabicTitle : item.title}
+                    </span>
+                    <span className="text-[10px] opacity-75 font-arabic mt-0.5">
+                      {lang === 'ar' ? item.title : item.arabicTitle}
+                    </span>
                   </div>
                 )}
 
                 {/* Tooltip on Collapsed */}
                 {isSidebarCollapsed && (
                   <div className="absolute left-14 hidden group-hover:block bg-card border border-border text-foreground text-xs font-semibold py-1.5 px-3 rounded-md shadow-md z-30 select-none pointer-events-none whitespace-nowrap">
-                    {item.title} | <span className="font-arabic">{item.arabicTitle}</span>
+                    {lang === 'ar' ? item.arabicTitle : item.title} | <span className="font-arabic">{lang === 'ar' ? item.title : item.arabicTitle}</span>
                   </div>
                 )}
               </Link>
