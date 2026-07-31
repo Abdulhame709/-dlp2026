@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Building,
   Bell,
-  CreditCard
+  CreditCard,
+  MessageSquare
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -38,6 +39,7 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Organizations', arabicTitle: 'الشركات ومساحات العمل', path: '/app/organizations', icon: Building },
   { title: 'Notifications', arabicTitle: 'التنبيهات والإشعارات', path: '/app/notifications', icon: Bell },
   { title: 'Billing', arabicTitle: 'الاشتراكات والمدفوعات', path: '/app/billing', icon: CreditCard },
+  { title: 'Feedback', arabicTitle: 'الملاحظات والشكاوي', path: '/app/feedback', icon: MessageSquare },
   { title: 'Settings', arabicTitle: 'الإعدادات والخصوصية', path: '/app/settings', icon: Settings },
 ];
 
