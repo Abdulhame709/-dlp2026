@@ -1,0 +1,51 @@
+import { INotificationRepository } from './notification-repository-interface';
+import { NotificationItem, NotificationType } from './notification-types';
+
+// Local in-memory store for development/testing
+const mockNotificationsStore: NotificationItem[] = [
+  {
+    id: 'notif-default-1',
+    userId: '11111111-1111-1111-1111-111111111111',
+    title: 'Welcome to Cortex AI',
+    message: 'Your intelligent AI executive assistant is now successfully set up.',
+    type: 'ALERT',
+    isRead: false,
+    createdAt: new Date(),
+  },
+];
+
+export class MockNotificationRepository implements INotificationRepository {
+  async getNotifications(userId: string): Promise<NotificationItem[]> {
+    return mockNotificationsStore.filter(n => n.userId === userId);
+  }
+
+  async sendNotification(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType = 'ALERT',
+    actionUrl?: string
+  ): Promise<NotificationItem> {
+    const newNotif: NotificationItem = {
+      id: `notif-uuid-${Date.now()}`,
+      userId,
+      title,
+      message,
+      type,
+      isRead: false,
+      actionUrl: actionUrl || null,
+      createdAt: new Date(),
+    };
+
+    mockNotificationsStore.push(newNotif);
+    return newNotif;
+  }
+
+  async markAsRead(notificationId: string): Promise<boolean> {
+    const index = mockNotificationsStore.findIndex(n => n.id === notificationId);
+    if (index === -1) return false;
+
+    mockNotificationsStore[index].isRead = true;
+    return true;
+  }
+}
