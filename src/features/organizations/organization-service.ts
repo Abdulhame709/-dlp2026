@@ -1,15 +1,36 @@
+import { IOrganizationRepository } from './repositories/organization-repository-interface';
+import { OrganizationEntity } from './repositories/supabase-organization-repository';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { createClient } from '@/core/database/connection';
 import { RoleGuard } from '@/core/auth/role-guard';
 import { Logger } from '@/core/logging/logger';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class OrganizationService {
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): IOrganizationRepository {
+    return DependencyInjector.getOrganizationRepository();
+  }
+
+  /**
+   * Retrieves all organizations the user belongs to
+   */
+  static async getUserOrganizations(userId: string): Promise<OrganizationEntity[]> {
+    return this.repository.getUserOrganizations(userId);
+  }
+
+  /**
+   * Retrieves a single organization by ID
+   */
+  static async getOrganization(organizationId: string): Promise<OrganizationEntity | null> {
+    return this.repository.getOrganization(organizationId);
+  }
+
   /**
    * Retrieves all authorized organization members
    */
   static async getMembers(userId: string, organizationId: string): Promise<any[]> {
     try {
-      // Security: caller must be a member of the organization
       const supabase = await createClient();
       const { data, error } = await supabase
         .from('organization_members')

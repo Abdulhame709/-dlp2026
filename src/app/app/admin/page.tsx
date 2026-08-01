@@ -5,28 +5,80 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Building, Users, BrainCircuit, Activity, ShieldAlert, HeartPulse } from 'lucide-react';
+import { createClient } from '@/core/database/client';
+
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  actor: string;
+  details: string;
+  time: string;
+}
 
 export default function AdminPage() {
   const [isLoading, setIsLoading] = React.useState(true);
+  const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
+  const [stats, setStats] = React.useState({
+    activeUsers: 0,
+    organizations: 0,
+    aiRequests: 0,
+  });
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
+    async function loadAdminData() {
+      try {
+        const supabase = await createClient();
+
+        // Fetch real audit logs from database
+        const { data: logs } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (logs && logs.length > 0) {
+          setAuditLogs(logs.map((log: any) => ({
+            id: log.id,
+            action: log.action || 'Unknown action',
+            actor: log.actor_email || log.user_id || 'Unknown',
+            details: log.details || '',
+            time: new Date(log.created_at).toLocaleString(),
+          })));
+        }
+
+        // Fetch real stats from database
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: orgCount } = await supabase
+          .from('organizations')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: activityCount } = await supabase
+          .from('activity_logs')
+          .select('*', { count: 'exact', head: true });
+
+        setStats({
+          activeUsers: userCount || 0,
+          organizations: orgCount || 0,
+          aiRequests: activityCount || 0,
+        });
+      } catch (err) {
+        console.error('Failed to load admin data:', err);
+        // Fallback to empty state — no hardcoded data
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadAdminData();
   }, []);
 
-  // Seeded Admin statistics
-  const stats = [
-    { name: 'Active Users', count: '14,892', change: '+12.5%', icon: Users, color: 'text-primary' },
-    { name: 'Organizations', count: '1,248', change: '+8.2%', icon: Building, color: 'text-accent' },
-    { name: 'AI Requests', count: '452,903', change: '+35.6%', icon: BrainCircuit, color: 'text-secondary' },
-    { name: 'System Health', count: '99.98%', change: 'Excellent', icon: HeartPulse, color: 'text-secondary' },
-  ];
-
-  const recentAudits = [
-    { id: '1', action: 'User changed password', actor: 'demo@cortexai.local', time: '10 mins ago' },
-    { id: '2', action: 'Task deleted (soft-delete)', actor: 'founder@cortexai.com', time: '45 mins ago' },
-    { id: '3', action: 'Subscription upgraded to PRO', actor: 'user-b-2222', time: '2 hours ago' },
-    { id: '4', action: 'Permission role updated (MEMBER ➔ ADMIN)', actor: 'owner-org-1', time: '5 hours ago' },
+  const displayStats = [
+    { name: 'Active Users', count: stats.activeUsers.toLocaleString(), change: 'Live', icon: Users, color: 'text-primary' },
+    { name: 'Organizations', count: stats.organizations.toLocaleString(), change: 'Live', icon: Building, color: 'text-accent' },
+    { name: 'AI Requests', count: stats.aiRequests.toLocaleString(), change: 'Live', icon: BrainCircuit, color: 'text-secondary' },
+    { name: 'System Health', count: 'Active', change: 'Operational', icon: HeartPulse, color: 'text-secondary' },
   ];
 
   return (
@@ -38,7 +90,7 @@ export default function AdminPage() {
 
       {/* Grid statistics metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => {
+        {displayStats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <Card key={idx} className="p-5 flex flex-col justify-between">
@@ -53,7 +105,7 @@ export default function AdminPage() {
                   <div className="space-y-1">
                     <span className="text-2xl font-black text-foreground">{stat.count}</span>
                     <p className="text-[10px] text-secondary font-bold flex items-center">
-                      <Activity className="h-3 w-3 mr-1" /> {stat.change} this month
+                      <Activity className="h-3 w-3 mr-1" /> {stat.change}
                     </p>
                   </div>
                 )}
@@ -77,8 +129,12 @@ export default function AdminPage() {
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-8 w-full" />
               </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No audit logs found. Logs will appear here as users interact with the system.
+              </div>
             ) : (
-              recentAudits.map(audit => (
+              auditLogs.map(audit => (
                 <div key={audit.id} className="py-3 flex justify-between text-xs font-semibold">
                   <div className="space-y-1">
                     <p className="text-foreground">{audit.action}</p>
@@ -100,10 +156,10 @@ export default function AdminPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold text-muted-foreground select-none">
                 <span>Monthly Token Budget</span>
-                <span>45% Used</span>
+                <span>0% Used</span>
               </div>
               <div className="h-2 bg-muted/40 rounded-full overflow-hidden border border-border">
-                <div className="h-full bg-primary rounded-full" style={{ width: '45%' }} />
+                <div className="h-full bg-primary rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground leading-normal">

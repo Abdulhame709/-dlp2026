@@ -1,47 +1,28 @@
+import { INotificationRepository } from './notification-repository-interface';
 import { NotificationItem, NotificationType } from './notification-types';
-
-const mockNotificationsStore: NotificationItem[] = [
-  {
-    id: 'notif-default-1',
-    userId: '11111111-1111-1111-1111-111111111111',
-    title: 'Welcome to Cortex AI',
-    message: 'Your intelligent AI executive assistant is now successfully set up.',
-    type: 'ALERT',
-    isRead: false,
-    createdAt: new Date(),
-  }
-];
+import { DependencyInjector } from '@/core/config/dependency-injector';
 
 export class NotificationService {
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): INotificationRepository {
+    return DependencyInjector.getNotificationRepository();
+  }
+
   static async getNotifications(userId: string): Promise<NotificationItem[]> {
-    return mockNotificationsStore.filter(n => n.userId === userId);
+    return this.repository.getNotifications(userId);
   }
 
   static async sendNotification(
     userId: string,
     title: string,
     message: string,
-    type: NotificationType = 'ALERT'
+    type: NotificationType = 'ALERT',
+    actionUrl?: string
   ): Promise<NotificationItem> {
-    const newNotif: NotificationItem = {
-      id: `notif-uuid-${Date.now()}`,
-      userId,
-      title,
-      message,
-      type,
-      isRead: false,
-      createdAt: new Date(),
-    };
-
-    mockNotificationsStore.push(newNotif);
-    return newNotif;
+    return this.repository.sendNotification(userId, title, message, type, actionUrl);
   }
 
   static async markAsRead(notificationId: string): Promise<boolean> {
-    const index = mockNotificationsStore.findIndex(n => n.id === notificationId);
-    if (index === -1) return false;
-
-    mockNotificationsStore[index].isRead = true;
-    return true;
+    return this.repository.markAsRead(notificationId);
   }
 }

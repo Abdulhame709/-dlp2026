@@ -55,17 +55,7 @@ export class GoalService {
   }
 }
 
-export class NotificationService {
-  static async sendNotification(userId: string, title: string, message: string): Promise<void> {
-    await Logger.info('Notification Triggered', { userId, title });
-  }
-
-  static async getNotifications(userId: string): Promise<any[]> {
-    return [
-      { id: 'notif-1', title: 'Welcome to Cortex AI', read: false },
-    ];
-  }
-}
+export { NotificationService } from '@/features/notifications/notification-service';
 
 export class ActivityService {
   static async logActivity(userId: string, eventName: string, metadata: any): Promise<void> {

@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/utils/event-bus';
 import { IAnalyticsRepository } from './analytics-repository-interface';
-import { MockAnalyticsRepository } from './mock-analytics-repository';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { 
   ProductivityMetrics, 
   UserIntelligenceProfile, 
@@ -9,7 +9,10 @@ import {
 } from './analytics-types';
 
 export class AnalyticsService {
-  private static repository: IAnalyticsRepository = new MockAnalyticsRepository();
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): IAnalyticsRepository {
+    return DependencyInjector.getAnalyticsRepository();
+  }
 
   /**
    * Initialize and wire up subscribers to intercept central EventBus events
@@ -62,19 +65,12 @@ export class AnalyticsService {
     EventBus.subscribe('TaskDeleted', async (data) => {
       await this.repository.recordEvent({
         eventName: 'TaskDeleted',
-        userId: '11111111-1111-1111-1111-111111111111',
+        userId: data.task?.userId || '11111111-1111-1111-1111-111111111111',
         metadata: {
           taskId: data.taskId,
         },
       });
     });
-  }
-
-  /**
-   * Set custom repository implementation dynamically (e.g. SupabaseAnalyticsRepository)
-   */
-  static setRepository(customRepo: IAnalyticsRepository) {
-    this.repository = customRepo;
   }
 
   /**

@@ -4,11 +4,16 @@ import * as React from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
-import { Building, Plus, Users, Shield, Sparkles, LayoutGrid, Check } from 'lucide-react';
+import { OrganizationService } from '@/features/organizations/organization-service';
+import { OrganizationEntity } from '@/features/organizations/repositories/supabase-organization-repository';
+import { Building, Plus, Users, Shield, Sparkles, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function OrganizationsPage() {
-  const [userId, setUserId] = React.useState('11111111-1111-1111-1111-111111111111');
-  const [activeOrg, setActiveOrg] = React.useState('org-1');
+  const [userId, setUserId] = React.useState<string | null>(null);
+  const [organizations, setOrganizations] = React.useState<OrganizationEntity[]>([]);
+  const [activeOrg, setActiveOrg] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -16,18 +21,21 @@ export default function OrganizationsPage() {
         const user = await AuthService.getCurrentUser();
         if (user) {
           setUserId(user.id);
+          // Load real organizations from service
+          const orgs = await OrganizationService.getUserOrganizations(user.id);
+          setOrganizations(orgs);
+          if (orgs.length > 0) {
+            setActiveOrg(orgs[0].id);
+          }
         }
       } catch (err) {
         console.error('Failed to resolve current user session inside organizations page:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadUser();
   }, []);
-
-  const orgs = [
-    { id: 'org-1', name: 'Cortex Founders Inc.', role: 'OWNER', members: 4, plan: 'PRO' },
-    { id: 'org-2', name: 'Personal workspace', role: 'OWNER', members: 1, plan: 'FREE' },
-  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in select-none p-6 text-foreground">
@@ -45,52 +53,64 @@ export default function OrganizationsPage() {
       </div>
 
       <div className="space-y-4">
-        {orgs.map((org) => {
-          const isActive = activeOrg === org.id;
-          return (
-            <Card 
-              key={org.id} 
-              className={cn(
-                'p-5 border bg-card rounded-xl flex items-center justify-between gap-4 transition-all hover:border-primary/20',
-                { 'border-primary/30 ring-1 ring-primary/25 bg-primary/5': isActive }
-              )}
-            >
-              <div className="flex items-center space-x-4">
-                <div className={cn(
-                  'h-11 w-11 rounded-lg flex items-center justify-center font-bold text-lg',
-                  isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                )}>
-                  {org.name.slice(0, 1)}
-                </div>
-                <div className="space-y-1">
-                  <span className="text-sm font-bold block">{org.name}</span>
-                  <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {org.members} Members</span>
-                    <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Role: {org.role}</span>
-                    <span className="text-primary font-bold">{org.plan} Plan</span>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Building className="h-12 w-12 text-muted-foreground/60 mb-3 animate-pulse" />
+            <p className="text-xs text-muted-foreground">Loading organizations...</p>
+          </div>
+        ) : organizations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-xl">
+            <Building className="h-12 w-12 text-muted-foreground/60 mb-3" />
+            <h3 className="text-sm font-bold">No organizations yet</h3>
+            <p className="text-xs text-muted-foreground mt-1">Create your first organization to start collaborating.</p>
+          </div>
+        ) : (
+          organizations.map((org) => {
+            const isActive = activeOrg === org.id;
+            return (
+              <Card 
+                key={org.id} 
+                className={cn(
+                  'p-5 border bg-card rounded-xl flex items-center justify-between gap-4 transition-all hover:border-primary/20',
+                  { 'border-primary/30 ring-1 ring-primary/25 bg-primary/5': isActive }
+                )}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={cn(
+                    'h-11 w-11 rounded-lg flex items-center justify-center font-bold text-lg',
+                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  )}>
+                    {org.name.slice(0, 1)}
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm font-bold block">{org.name}</span>
+                    <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground">
+                      <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Role: {org.ownerId === userId ? 'OWNER' : 'MEMBER'}</span>
+                      <span className="text-primary font-bold">{org.subscriptionPlan} Plan</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                {isActive ? (
-                  <span className="text-xs font-bold text-primary flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
-                    <Check className="h-4 w-4" /> Active Space
-                  </span>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="h-9 text-xs" 
-                    onClick={() => setActiveOrg(org.id)}
-                  >
-                    Switch Space
-                  </Button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
+                <div className="flex items-center gap-2">
+                  {isActive ? (
+                    <span className="text-xs font-bold text-primary flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
+                      <Check className="h-4 w-4" /> Active Space
+                    </span>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-9 text-xs" 
+                      onClick={() => setActiveOrg(org.id)}
+                    >
+                      Switch Space
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            );
+          })
+        )}
       </div>
 
       {/* RLS/Multi-tenant Safety Callout */}
@@ -106,6 +126,3 @@ export default function OrganizationsPage() {
     </div>
   );
 }
-
-// Inline Tailwind cn import helper to satisfy compilation
-import { cn } from '@/lib/utils';

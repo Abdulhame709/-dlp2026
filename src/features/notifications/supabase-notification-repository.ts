@@ -1,7 +1,8 @@
+import { INotificationRepository } from './notification-repository-interface';
 import { NotificationItem, NotificationType } from './notification-types';
 import { createClient } from '@/core/database/connection';
 
-export class SupabaseNotificationRepository {
+export class SupabaseNotificationRepository implements INotificationRepository {
   private mapRowToEntity(row: any): NotificationItem {
     return {
       id: row.id,
@@ -68,4 +69,3 @@ export class SupabaseNotificationRepository {
     return !error;
   }
 }
-export type { NotificationItem, NotificationType };

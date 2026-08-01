@@ -4,19 +4,31 @@ import * as React from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
+import { SettingsService } from '@/features/settings/settings-service';
+import { UserSettingsProfile } from '@/features/settings/settings-types';
 import { Settings, Shield, User, Bell, Database, Key, Sparkles } from 'lucide-react';
 
 export default function SettingsPage() {
-  const [fullName, setFullName] = React.useState('Abdul Demo User');
-  const [email, setEmail] = React.useState('owner@cortexai.com');
+  const [userId, setUserId] = React.useState<string | null>(null);
+  const [fullName, setFullName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [settings, setSettings] = React.useState<UserSettingsProfile | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
 
   React.useEffect(() => {
     async function loadUser() {
       try {
         const user = await AuthService.getCurrentUser();
         if (user) {
+          setUserId(user.id);
           setFullName(user.fullName || 'Cortex User');
           setEmail(user.email || 'user@cortexai.com');
+
+          // Load real settings from service
+          const userSettings = await SettingsService.getUserSettings(user.id);
+          setSettings(userSettings);
+          if (userSettings.fullName) setFullName(userSettings.fullName);
         }
       } catch (err) {
         console.error('Failed to load current user inside settings page:', err);
@@ -24,6 +36,24 @@ export default function SettingsPage() {
     }
     loadUser();
   }, []);
+
+  const handleSave = async () => {
+    if (!userId) return;
+    setIsSaving(true);
+    setSaveSuccess(false);
+    try {
+      const updated = await SettingsService.updateSettings(userId, {
+        fullName,
+      });
+      setSettings(updated);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in select-none p-6 text-foreground">
@@ -64,9 +94,12 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <span className="text-xs font-bold text-muted-foreground">Full Name</span>
-                  <div className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs flex items-center font-medium">
-                    {fullName}
-                  </div>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full h-10 px-3 bg-muted border border-border rounded-lg text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <span className="text-xs font-bold text-muted-foreground">Email Address</span>
@@ -102,8 +135,14 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex justify-end pt-4 border-t border-border/40">
-              <Button variant="primary" size="sm" className="h-10 text-xs cursor-pointer">
-                Save Preferences
+              <Button
+                variant="primary"
+                size="sm"
+                className="h-10 text-xs cursor-pointer"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save Preferences'}
               </Button>
             </div>
           </Card>

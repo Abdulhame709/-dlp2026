@@ -30,6 +30,11 @@ model Profile {
   tasks                   Task[]               @relation("TaskOwner")
   goals                   Goal[]               @relation("GoalOwner")
   activityLogs            ActivityLog[]        @relation("ActivityUser")
+  conversations           AIConversation[]     @relation("ConversationOwner")
+  memories                AIMemory[]           @relation("MemoryOwner")
+  notifications           Notification[]       @relation("NotificationOwner")
+  subscription            Subscription?        @relation("SubscriptionOwner")
+  auditLogs               AuditLog[]           @relation("AuditLogOwner")
 
   @@map("profiles")
 }
@@ -53,6 +58,9 @@ model Organization {
   projects         Project[]            @relation("OrgProjects")
   tasks            Task[]               @relation("OrgTasks")
   goals            Goal[]               @relation("OrgGoals")
+  conversations    AIConversation[]     @relation("OrgConversations")
+  memories         AIMemory[]           @relation("OrgMemories")
+  notifications    Notification[]       @relation("OrgNotifications")
 
   @@map("organizations")
 }
@@ -200,4 +208,119 @@ model FeatureFlag {
   updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz
 
   @@map("feature_flags")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Phase 10 — 6 Missing Production Tables
+// ─────────────────────────────────────────────────────────────
+
+model AIConversation {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  organizationId String?   @map("organization_id") @db.Uuid
+  title          String    @db.VarChar(255)
+  category       String?   @default("General") @db.VarChar(50)
+  isArchived     Boolean   @default(false) @map("is_archived")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  // Relationships
+  user           Profile      @relation("ConversationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation("OrgConversations", fields: [organizationId], references: [id], onDelete: Cascade)
+  messages       AIMessage[]  @relation("ConversationMessages")
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("ai_conversations")
+}
+
+model AIMessage {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  role           String   @db.VarChar(20)
+  content        String   @db.Text
+  rating         String?  @db.VarChar(10)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relationships
+  conversation   AIConversation @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+model AIMemory {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  organizationId  String?  @map("organization_id") @db.Uuid
+  memoryType      String   @map("memory_type") @db.VarChar(50)
+  content         String   @db.Text
+  importanceScore Int      @default(5) @map("importance_score")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  // Relationships
+  user            Profile       @relation("MemoryOwner", fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation("OrgMemories", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, memoryType])
+  @@map("ai_memory")
+}
+
+model Notification {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  title          String   @db.VarChar(255)
+  message        String   @db.Text
+  type           String   @default("ALERT") @db.VarChar(20)
+  readStatus     Boolean  @default(false) @map("read_status")
+  actionUrl      String?  @map("action_url") @db.VarChar(512)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relationships
+  user           Profile       @relation("NotificationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation("OrgNotifications", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("notifications")
+}
+
+model Subscription {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  planName  String   @default("FREE") @map("plan_name") @db.VarChar(50)
+  status    String   @default("ACTIVE") @db.VarChar(20)
+  startDate DateTime @map("start_date") @db.Timestamptz
+  endDate   DateTime @map("end_date") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  // Relationships
+  user      Profile  @relation("SubscriptionOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.Uuid
+  oldValue   String?  @map("old_value") @db.Text
+  newValue   String?  @map("new_value") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relationships
+  user       Profile  @relation("AuditLogOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
 }

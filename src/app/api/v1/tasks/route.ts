@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TaskService } from '@/features/tasks/services/task-service';
 import { ErrorHandler, AppError } from '@/core/utils/error-handler';
 import { z } from 'zod';
+import { createClient } from '@/core/database/server';
 
 const createTaskApiSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }).max(255),
@@ -11,11 +12,31 @@ const createTaskApiSchema = z.object({
 });
 
 /**
+ * Resolves the authenticated user ID from the Supabase session.
+ * Returns 401 if no valid session is found.
+ */
+async function getAuthenticatedUserId(request: NextRequest): Promise<string | NextResponse> {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return NextResponse.json(
+      { status: 'error', message: 'Authentication required. Please sign in.' },
+      { status: 401 }
+    );
+  }
+
+  return user.id;
+}
+
+/**
  * GET /api/v1/tasks - Retrieve standard user tasks
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = '11111111-1111-1111-1111-111111111111'; // Mock resolved from session
+    const userId = await getAuthenticatedUserId(request);
+    if (typeof userId !== 'string') return userId; // 401 response
+
     const list = await TaskService.getUserTasks(userId);
 
     return NextResponse.json({
@@ -33,10 +54,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getAuthenticatedUserId(request);
+    if (typeof userId !== 'string') return userId; // 401 response
+
     const body = await request.json();
     const validated = createTaskApiSchema.parse(body);
 
-    const userId = '11111111-1111-1111-1111-111111111111';
     const task = await TaskService.createTask(userId, validated);
 
     return NextResponse.json({

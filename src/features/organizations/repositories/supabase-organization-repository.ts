@@ -1,3 +1,4 @@
+import { IOrganizationRepository } from './organization-repository-interface';
 import { createClient } from '@/core/database/connection';
 
 export interface OrganizationEntity {
@@ -9,7 +10,7 @@ export interface OrganizationEntity {
   createdAt: Date;
 }
 
-export class SupabaseOrganizationRepository {
+export class SupabaseOrganizationRepository implements IOrganizationRepository {
   private mapRowToEntity(row: any): OrganizationEntity {
     return {
       id: row.id,
@@ -44,5 +45,39 @@ export class SupabaseOrganizationRepository {
 
     if (error || !data) return null;
     return this.mapRowToEntity(data);
+  }
+
+  async getUserOrganizations(userId: string): Promise<OrganizationEntity[]> {
+    const supabase = await createClient();
+
+    // Fetch organizations where the user is a member
+    const { data, error } = await supabase
+      .from('organization_members')
+      .select(`
+        organization:organizations(
+          id,
+          name,
+          logo_url,
+          owner_id,
+          subscription_plan,
+          created_at
+        ),
+        role
+      `)
+      .eq('user_id', userId);
+
+    if (error || !data) return [];
+
+    // Map the joined rows to OrganizationEntity
+    return data
+      .filter((row: any) => row.organization)
+      .map((row: any) => ({
+        id: row.organization.id,
+        name: row.organization.name,
+        logoUrl: row.organization.logo_url,
+        ownerId: row.organization.owner_id,
+        subscriptionPlan: row.organization.subscription_plan,
+        createdAt: new Date(row.organization.created_at),
+      }));
   }
 }

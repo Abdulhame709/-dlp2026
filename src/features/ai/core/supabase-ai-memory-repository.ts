@@ -1,7 +1,8 @@
+import { IAIMemoryRepository } from '../memory/memory-repository-interface';
 import { AIMemoryRecord, AIMemoryType } from '../memory/memory-types';
 import { createClient } from '@/core/database/connection';
 
-export class SupabaseAIMemoryRepository {
+export class SupabaseAIMemoryRepository implements IAIMemoryRepository {
   private mapRowToRecord(row: any): AIMemoryRecord {
     return {
       id: row.id,
@@ -81,4 +82,3 @@ export class SupabaseAIMemoryRepository {
     if (error) throw new Error(error.message);
   }
 }
-export type { AIMemoryRecord, AIMemoryType };

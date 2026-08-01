@@ -1,4 +1,6 @@
 import { env } from './env';
+
+// Existing wired repositories
 import { ITaskRepository } from '@/features/tasks/repositories/task-repository-interface';
 import { MockTaskRepository } from '@/features/tasks/repositories/mock-task-repository';
 
@@ -14,7 +16,27 @@ import { MockProjectRepository } from '@/features/projects/repositories/mock-pro
 import { IGoalRepository } from '@/features/goals/repositories/goal-repository-interface';
 import { MockGoalRepository } from '@/features/goals/repositories/mock-goal-repository';
 
+// Newly wired repositories
+import { IAnalyticsRepository } from '@/features/analytics/analytics-repository-interface';
+import { MockAnalyticsRepository } from '@/features/analytics/mock-analytics-repository';
+
+import { INotificationRepository } from '@/features/notifications/notification-repository-interface';
+import { MockNotificationRepository } from '@/features/notifications/mock-notification-repository';
+
+import { IBillingRepository } from '@/features/billing/billing-repository-interface';
+import { MockBillingRepository } from '@/features/billing/mock-billing-repository';
+
+import { IAIMemoryRepository } from '@/features/ai/memory/memory-repository-interface';
+import { MockAIMemoryRepository } from '@/features/ai/memory/mock-memory-repository';
+
+import { IOrganizationRepository } from '@/features/organizations/repositories/organization-repository-interface';
+import { MockOrganizationRepository } from '@/features/organizations/repositories/mock-organization-repository';
+
 export class DependencyInjector {
+  // ──────────────────────────────────────────────────────────
+  // Already wired repositories (Step 1)
+  // ──────────────────────────────────────────────────────────
+
   /**
    * Dynamically resolves the active Task Repository implementation
    */
@@ -22,7 +44,6 @@ export class DependencyInjector {
     if (env.useMock) {
       return new MockTaskRepository();
     }
-    // Dynamically load production adapter to isolate server-only modules from client bundles
     const { SupabaseTaskRepository } = require('@/features/tasks/repositories/supabase-task-repository');
     return new SupabaseTaskRepository();
   }
@@ -69,5 +90,64 @@ export class DependencyInjector {
     }
     const { SupabaseGoalRepository } = require('@/features/goals/repositories/supabase-goal-repository');
     return new SupabaseGoalRepository();
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Step 2 — Newly wired repositories
+  // ──────────────────────────────────────────────────────────
+
+  /**
+   * Dynamically resolves the active Analytics Repository implementation
+   */
+  static getAnalyticsRepository(): IAnalyticsRepository {
+    if (env.useMock) {
+      return new MockAnalyticsRepository();
+    }
+    const { SupabaseAnalyticsRepository } = require('@/features/analytics/supabase-analytics-repository');
+    return new SupabaseAnalyticsRepository();
+  }
+
+  /**
+   * Dynamically resolves the active Notification Repository implementation
+   */
+  static getNotificationRepository(): INotificationRepository {
+    if (env.useMock) {
+      return new MockNotificationRepository();
+    }
+    const { SupabaseNotificationRepository } = require('@/features/notifications/supabase-notification-repository');
+    return new SupabaseNotificationRepository();
+  }
+
+  /**
+   * Dynamically resolves the active Billing Repository implementation
+   */
+  static getBillingRepository(): IBillingRepository {
+    if (env.useMock) {
+      return new MockBillingRepository();
+    }
+    const { SupabaseBillingRepository } = require('@/features/billing/supabase-billing-repository');
+    return new SupabaseBillingRepository();
+  }
+
+  /**
+   * Dynamically resolves the active AI Memory Repository implementation
+   */
+  static getAIMemoryRepository(): IAIMemoryRepository {
+    if (env.useMock) {
+      return new MockAIMemoryRepository();
+    }
+    const { SupabaseAIMemoryRepository } = require('@/features/ai/core/supabase-ai-memory-repository');
+    return new SupabaseAIMemoryRepository();
+  }
+
+  /**
+   * Dynamically resolves the active Organization Repository implementation
+   */
+  static getOrganizationRepository(): IOrganizationRepository {
+    if (env.useMock) {
+      return new MockOrganizationRepository();
+    }
+    const { SupabaseOrganizationRepository } = require('@/features/organizations/repositories/supabase-organization-repository');
+    return new SupabaseOrganizationRepository();
   }
 }

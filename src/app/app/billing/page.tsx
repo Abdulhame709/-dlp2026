@@ -4,11 +4,15 @@ import * as React from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
-import { CreditCard, Check, Sparkles, Zap, Shield, Key } from 'lucide-react';
+import { SubscriptionService } from '@/features/billing/subscription-service';
+import { UserSubscription } from '@/features/billing/billing-types';
+import { CreditCard, Check, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function BillingPage() {
-  const [userId, setUserId] = React.useState('11111111-1111-1111-1111-111111111111');
-  const [currentPlan, setCurrentPlan] = React.useState('FREE');
+  const [userId, setUserId] = React.useState<string | null>(null);
+  const [subscription, setSubscription] = React.useState<UserSubscription | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -16,13 +20,33 @@ export default function BillingPage() {
         const user = await AuthService.getCurrentUser();
         if (user) {
           setUserId(user.id);
+          // Load real subscription from service
+          const sub = await SubscriptionService.getSubscription(user.id);
+          setSubscription(sub);
         }
       } catch (err) {
         console.error('Failed to resolve current user session inside billing page:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadUser();
   }, []);
+
+  const currentPlan = subscription?.planName || 'FREE';
+
+  const handleUpgrade = async (tier: 'FREE' | 'PRO' | 'ENTERPRISE') => {
+    if (!userId) return;
+    try {
+      const checkoutUrl = await SubscriptionService.upgradePlan(userId, tier);
+      // In production, redirect to Stripe checkout
+      // For now, refresh subscription state
+      const updatedSub = await SubscriptionService.getSubscription(userId);
+      setSubscription(updatedSub);
+    } catch (err) {
+      console.error('Failed to upgrade plan:', err);
+    }
+  };
 
   const tiers = [
     { name: 'FREE Standard', price: '$0', desc: 'Optimal for single users starting with in-memory task planning.', features: ['Up to 50 active tasks', 'Standard AI Prioritizer', 'Email Verification', 'Arabic and English layouts'] },
@@ -81,9 +105,9 @@ export default function BillingPage() {
                     className="w-full h-10 text-xs cursor-pointer" 
                     onClick={() => {
                       if (tier.name.includes('PRO')) {
-                        setCurrentPlan('PRO');
+                        handleUpgrade('PRO');
                       } else {
-                        setCurrentPlan('FREE');
+                        handleUpgrade('FREE');
                       }
                     }}
                   >
@@ -109,6 +133,3 @@ export default function BillingPage() {
     </div>
   );
 }
-
-// Inline Tailwind cn import helper to satisfy compilation
-import { cn } from '@/lib/utils';

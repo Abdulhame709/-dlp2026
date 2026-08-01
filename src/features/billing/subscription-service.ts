@@ -1,24 +1,28 @@
+import { IBillingRepository } from './billing-repository-interface';
 import { SubscriptionTier, UserSubscription } from './billing-types';
 import { MockPaymentProvider } from './mock-payment-provider';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class SubscriptionService {
-  private static userSubscriptions = new Map<string, UserSubscription>();
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): IBillingRepository {
+    return DependencyInjector.getBillingRepository();
+  }
 
   static async getSubscription(userId: string): Promise<UserSubscription> {
-    const existing = this.userSubscriptions.get(userId);
+    const existing = await this.repository.getSubscription(userId);
     if (existing) return existing;
 
-    const defaultSub: UserSubscription = {
-      id: `sub-uuid-${Date.now()}`,
+    // Default subscription for new users
+    const defaultSub = await this.repository.saveSubscription(
       userId,
-      planName: 'FREE',
-      status: 'ACTIVE',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 86400000 * 30),
-    };
+      'FREE',
+      'ACTIVE',
+      new Date(),
+      new Date(Date.now() + 86400000 * 30)
+    );
 
-    this.userSubscriptions.set(userId, defaultSub);
     return defaultSub;
   }
 
@@ -26,17 +30,14 @@ export class SubscriptionService {
     // Generate Stripe checkout session URL in background
     const checkoutUrl = await MockPaymentProvider.createCheckoutSession(userId, tier);
 
-    // Update local state (optimistic upgrade)
-    const updatedSub: UserSubscription = {
-      id: `sub-uuid-${Date.now()}`,
+    // Update subscription via repository
+    const updatedSub = await this.repository.saveSubscription(
       userId,
-      planName: tier,
-      status: 'ACTIVE',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 86400000 * 30),
-    };
-
-    this.userSubscriptions.set(userId, updatedSub);
+      tier,
+      'ACTIVE',
+      new Date(),
+      new Date(Date.now() + 86400000 * 30)
+    );
 
     // Broadcast Subscription Change Event to EventBus
     await EventBus.publish('SUBSCRIPTION_CHANGED', {
