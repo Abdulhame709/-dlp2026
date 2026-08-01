@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TaskService } from '@/features/tasks/services/task-service';
 import { ErrorHandler, AppError } from '@/core/utils/error-handler';
+import { SecurityUtils } from '@/core/security/security-utils';
 import { z } from 'zod';
 import { createClient } from '@/core/database/server';
 
@@ -51,9 +52,19 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/v1/tasks - Create standard tasks via API
+ * Protected by CSRF verification and rate limiting.
  */
 export async function POST(request: NextRequest) {
   try {
+    // CSRF verification for mutation
+    const requestOrigin = request.headers.get('origin') || undefined;
+    if (!SecurityUtils.verifyCSRF(request.headers, requestOrigin)) {
+      return NextResponse.json(
+        { status: 'error', message: 'CSRF verification failed.' },
+        { status: 403 }
+      );
+    }
+
     const userId = await getAuthenticatedUserId(request);
     if (typeof userId !== 'string') return userId; // 401 response
 

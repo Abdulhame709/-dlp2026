@@ -15,7 +15,8 @@ model Profile {
   timezone         String   @default("UTC") @db.VarChar(100)
   language         String   @default("en") @db.VarChar(10)
   preferences      Json     @default("{}") @db.Jsonb
-  
+  isAdmin          Boolean  @default(false) @map("is_admin")
+
   // Audit Fields
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz
