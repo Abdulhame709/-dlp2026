@@ -6,10 +6,12 @@ import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
 import { OrganizationService } from '@/features/organizations/organization-service';
 import { OrganizationEntity } from '@/features/organizations/repositories/supabase-organization-repository';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Building, Plus, Users, Shield, Sparkles, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function OrganizationsPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string | null>(null);
   const [organizations, setOrganizations] = React.useState<OrganizationEntity[]>([]);
   const [activeOrg, setActiveOrg] = React.useState<string | null>(null);
@@ -43,12 +45,12 @@ export default function OrganizationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Building className="h-6 w-6 text-primary" /> Organizations & Workspaces
+            <Building className="h-6 w-6 text-primary" /> {t('organizations.title')}
           </h1>
-          <p className="text-sm text-muted-foreground font-arabic mt-1">مساحات العمل التشاركية وإدارات الفرق والشركات</p>
+          <p className="text-sm text-muted-foreground font-arabic mt-1">{t('organizations.desc')}</p>
         </div>
         <Button variant="primary" size="sm" className="h-10 text-xs cursor-pointer">
-          <Plus className="h-4 w-4 mr-2" /> New Organization
+          <Plus className="h-4 w-4 mr-2" /> {t('organizations.newOrgBtn')}
         </Button>
       </div>
 
@@ -94,16 +96,16 @@ export default function OrganizationsPage() {
                 <div className="flex items-center gap-2">
                   {isActive ? (
                     <span className="text-xs font-bold text-primary flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
-                      <Check className="h-4 w-4" /> Active Space
+                      <Check className="h-4 w-4" /> {t('organizations.activeSpace')}
                     </span>
                   ) : (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-9 text-xs" 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs"
                       onClick={() => setActiveOrg(org.id)}
                     >
-                      Switch Space
+                      {t('organizations.switchSpace')}
                     </Button>
                   )}
                 </div>
@@ -117,9 +119,9 @@ export default function OrganizationsPage() {
       <Card className="p-4 border border-primary/20 bg-primary/5 rounded-xl flex items-start space-x-3 select-none">
         <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0 animate-pulse" />
         <div className="space-y-1">
-          <h4 className="text-xs font-bold text-primary uppercase">Multi-Tenant Isolation Guard active</h4>
+          <h4 className="text-xs font-bold text-primary uppercase">{t('organizations.isolationGuard')}</h4>
           <p className="text-[11px] text-muted-foreground leading-normal">
-             Every organization has its own private database partition completely isolated at the row-level (RLS). Team members cannot view, modify, or leak any data belonging to other workspaces.
+             {t('organizations.isolationDesc')}
           </p>
         </div>
       </Card>

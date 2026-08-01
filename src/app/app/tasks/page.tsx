@@ -7,6 +7,7 @@ import { TaskStateMachine } from '@/features/tasks/services/task-state-machine';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
 import { AuthService } from '@/core/auth/auth-service';
 import { useKeyboardShortcuts } from '@/shared/hooks/use-shortcuts';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { SyncManager } from '@/core/utils/sync-manager';
 import { Widget } from '@/shared/components/dashboard/widget';
 import { Button } from '@/shared/components/ui/button';
@@ -41,6 +42,7 @@ type TaskView = 'LIST' | 'KANBAN' | 'CALENDAR' | 'TIMELINE';
 type TaskFilterType = 'ALL' | 'TODAY' | 'UPCOMING' | 'PRIORITY' | 'COMPLETED';
 
 export default function TasksPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
   
   // Core Task State
@@ -322,11 +324,22 @@ export default function TasksPage() {
   const handleAddComment = async () => {
     if (!selectedTask || !commentInput.trim()) return;
 
+    // Resolve the current user's display name dynamically
+    let displayName = 'User';
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser?.fullName) {
+        displayName = currentUser.fullName;
+      }
+    } catch {
+      // Fallback to generic 'User' if session lookup fails
+    }
+
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       taskId: selectedTask.id,
       userId: userId,
-      fullName: 'Cortex User',
+      fullName: displayName,
       content: commentInput,
       createdAt: new Date(),
     };
@@ -396,8 +409,8 @@ export default function TasksPage() {
       {/* 1. Header & Quick View Toggles */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 select-none">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Smart Tasks</h1>
-          <p className="text-xs text-muted-foreground font-arabic">نظام إدارة المهام وجدولة الأولويات الذكي</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('tasks.title')}</h1>
+          <p className="text-xs text-muted-foreground font-arabic">{t('tasks.desc')}</p>
         </div>
         
         {/* Toggle between List, Kanban, Calendar, and Timeline */}
@@ -463,7 +476,7 @@ export default function TasksPage() {
             <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search tasks..."
+              placeholder={t('tasks.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-9 pl-9 pr-3 rounded-lg border border-border bg-card text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -475,12 +488,12 @@ export default function TasksPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
           >
-            <option value="ALL">All Statuses (الجميع)</option>
-            <option value="INBOX">Inbox (الوارد)</option>
-            <option value="PLANNED">Planned (المجدول)</option>
-            <option value="IN_PROGRESS">In Progress (قيد العمل)</option>
-            <option value="WAITING">Waiting (المعلق)</option>
-            <option value="COMPLETED">Completed (المكتمل)</option>
+            <option value="ALL">{t('tasks.allStatuses')}</option>
+            <option value="INBOX">Inbox</option>
+            <option value="PLANNED">Planned</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="WAITING">Waiting</option>
+            <option value="COMPLETED">Completed</option>
           </select>
 
           <select
@@ -488,11 +501,11 @@ export default function TasksPage() {
             onChange={(e) => setPriorityFilter(e.target.value)}
             className="h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
           >
-            <option value="ALL">All Priorities (الأولويات)</option>
-            <option value="CRITICAL">Critical (حرج)</option>
-            <option value="HIGH">High (عالي)</option>
-            <option value="MEDIUM">Medium (متوسط)</option>
-            <option value="LOW">Low (منخفض)</option>
+            <option value="ALL">{t('tasks.allPriorities')}</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
           </select>
 
           <Button
@@ -501,13 +514,13 @@ export default function TasksPage() {
             className="h-9 text-xs cursor-pointer"
             onClick={() => setIsAiFilterActive(!isAiFilterActive)}
           >
-            <Sparkles className="h-4 w-4 mr-1 text-primary shrink-0" /> AI Suggested
+            <Sparkles className="h-4 w-4 mr-1 text-primary shrink-0" /> {t('tasks.aiSuggested')}
           </Button>
         </div>
 
         <div>
           <Button variant="primary" size="sm" className="h-9 text-xs" onClick={() => setIsNewTaskModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-1 shrink-0" /> Add Task
+            <Plus className="h-4 w-4 mr-1 shrink-0" /> {t('tasks.addView')}
           </Button>
         </div>
       </div>
@@ -516,7 +529,7 @@ export default function TasksPage() {
       {selectedTasks.length > 0 && (
         <div className="flex items-center justify-between p-3.5 bg-primary/5 border border-primary/20 rounded-xl select-none animate-fade-in">
           <span className="text-xs font-semibold text-primary">
-            {selectedTasks.length} tasks selected (تم تحديدها)
+            {t('tasks.tasksSelected', { count: selectedTasks.length })}
           </span>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="h-8 text-xs text-secondary hover:bg-secondary/10" onClick={handleBulkComplete}>
@@ -542,8 +555,8 @@ export default function TasksPage() {
       ) : filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center select-none border border-dashed border-border rounded-xl">
           <CheckSquare className="h-12 w-12 text-muted-foreground/60 mb-3" />
-          <h3 className="text-sm font-bold">No tasks found</h3>
-          <p className="text-xs text-muted-foreground mt-1">There are no tasks matching your selected filters.</p>
+          <h3 className="text-sm font-bold">{t('tasks.noTasksFound')}</h3>
+          <p className="text-xs text-muted-foreground mt-1">{t('tasks.noTasksDesc')}</p>
         </div>
       ) : (
         <div className="w-full">
@@ -722,7 +735,7 @@ export default function TasksPage() {
           >
             {/* Drawer Header */}
             <div className="flex h-16 items-center justify-between border-b border-border px-6 select-none bg-muted/20">
-              <span className="text-sm font-bold text-foreground">Task Details | تفاصيل المهمة</span>
+              <span className="text-sm font-bold text-foreground">{t('tasks.taskDetails')}</span>
               <button 
                 onClick={() => setSelectedTask(null)}
                 className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
@@ -776,15 +789,15 @@ export default function TasksPage() {
               <Card className="p-4 border border-primary/20 bg-primary/5 space-y-3.5 select-none">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold flex items-center gap-1.5 text-primary">
-                    <Sparkles className="h-4 w-4 animate-bounce text-primary shrink-0" /> AI Task Intelligence
+                    <Sparkles className="h-4 w-4 animate-bounce text-primary shrink-0" /> {t('tasks.aiTaskIntel')}
                   </h4>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-7 px-2 text-[10px] bg-card hover:bg-muted"
                     onClick={triggerTaskAnalysis}
                     isLoading={isAnalyzingTask}
                   >
-                    Get AI Advice
+                    {t('tasks.getAiAdvice')}
                   </Button>
                 </div>
 
@@ -792,10 +805,10 @@ export default function TasksPage() {
                   <div className="space-y-3 animate-fade-in text-[11px] leading-relaxed">
                     {/* Suggestion 1: Better Description */}
                     <div className="p-2 bg-card rounded border border-border space-y-1">
-                      <span className="font-bold text-primary block">Suggested Description:</span>
+                      <span className="font-bold text-primary block">{t('tasks.suggestedDesc')}</span>
                       <p className="text-muted-foreground">{aiTaskSuggestions.betterDescription}</p>
                       <Button variant="ghost" className="h-5 px-1.5 text-[9px] mt-1 hover:bg-muted" onClick={applyAiDescription}>
-                        Apply Description
+                        {t('tasks.applyDesc')}
                       </Button>
                     </div>
 
@@ -804,13 +817,13 @@ export default function TasksPage() {
                       <div className="p-2 bg-card rounded border border-border space-y-1">
                         <span className="font-bold text-primary block">Priority: {aiTaskSuggestions.suggestedPriority}</span>
                         <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiPriority}>
-                          Apply Priority
+                          {t('tasks.applyPriority')}
                         </Button>
                       </div>
                       <div className="p-2 bg-card rounded border border-border space-y-1">
                         <span className="font-bold text-primary block">Duration: {aiTaskSuggestions.suggestedDuration} mins</span>
                         <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiDuration}>
-                          Apply Duration
+                          {t('tasks.applyDuration')}
                         </Button>
                       </div>
                     </div>
@@ -827,7 +840,7 @@ export default function TasksPage() {
               {/* Checklist Sub-module */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5 select-none">
-                  Checklist <CheckSquare className="h-4 w-4 text-primary" />
+                  {t('tasks.checklist')} <CheckSquare className="h-4 w-4 text-primary" />
                 </h4>
                 
                 {/* Checklist Items list */}
@@ -851,14 +864,14 @@ export default function TasksPage() {
 
                 {/* Checklist Add form */}
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="Add checklist item..."
+                  <Input
+                    placeholder={t('tasks.addChecklistPlaceholder')}
                     value={checklistInput}
                     onChange={(e) => setChecklistInput(e.target.value)}
                     className="h-8 text-xs"
                   />
                   <Button variant="outline" size="sm" className="h-8 text-xs shrink-0" onClick={handleAddChecklistItem}>
-                    Add
+                    {t('common.add')}
                   </Button>
                 </div>
               </div>
@@ -866,7 +879,7 @@ export default function TasksPage() {
               {/* Comment Threads Sub-module */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5 select-none">
-                  Comments <MessageSquare className="h-4 w-4 text-primary" />
+                  {t('tasks.comments')} <MessageSquare className="h-4 w-4 text-primary" />
                 </h4>
 
                 {/* Comments list */}
@@ -884,14 +897,14 @@ export default function TasksPage() {
 
                 {/* Comment Input */}
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="Write a comment..."
+                  <Input
+                    placeholder={t('tasks.writeCommentPlaceholder')}
                     value={commentInput}
                     onChange={(e) => setCommentInput(e.target.value)}
                     className="h-8 text-xs"
                   />
                   <Button variant="primary" size="sm" className="h-8 text-xs shrink-0" onClick={handleAddComment}>
-                    Send
+                    {t('common.continue')}
                   </Button>
                 </div>
               </div>
@@ -901,10 +914,10 @@ export default function TasksPage() {
             {/* Drawer Footer Actions */}
             <div className="border-t border-border p-4 bg-muted/10 flex gap-3">
               <Button variant="outline" className="flex-1 h-9 text-xs" onClick={() => handleCompleteTask(selectedTask.id)}>
-                Complete Task
+                {t('tasks.completeTaskBtn')}
               </Button>
               <Button variant="danger" className="flex-1 h-9 text-xs" onClick={() => handleDeleteTask(selectedTask.id)}>
-                Delete Task
+                {t('tasks.deleteTaskBtn')}
               </Button>
             </div>
           </div>
@@ -915,20 +928,20 @@ export default function TasksPage() {
       {isNewTaskModalOpen && (
         <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-30 flex items-center justify-center p-4 select-none animate-fade-in" onClick={() => setIsNewTaskModalOpen(false)}>
           <div className="max-w-md w-full border border-border bg-card rounded-xl p-6 shadow-xl space-y-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-foreground">Add New Task | إضافة مهمة جديدة</h3>
-            
+            <h3 className="text-base font-bold text-foreground">{t('tasks.addTaskTitle')}</h3>
+
             <div className="space-y-4">
-              <Input 
-                label="Task Title"
-                placeholder="Enter task title"
+              <Input
+                label={t('tasks.taskTitleLabel')}
+                placeholder={t('tasks.taskTitlePlaceholder')}
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
               />
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Description</label>
+                <label className="text-xs font-medium text-foreground">{t('tasks.taskDescLabel')}</label>
                 <textarea
-                  placeholder="Task description details..."
+                  placeholder={t('tasks.taskDescPlaceholder')}
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   className="w-full h-20 p-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -937,7 +950,7 @@ export default function TasksPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-foreground">Priority</label>
+                  <label className="text-xs font-medium text-foreground">{t('common.priority')}</label>
                   <select
                     value={newPriority}
                     onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
@@ -950,7 +963,7 @@ export default function TasksPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-foreground">Status</label>
+                  <label className="text-xs font-medium text-foreground">{t('common.status')}</label>
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value as TaskStatus)}
@@ -966,10 +979,10 @@ export default function TasksPage() {
 
             <div className="pt-2 border-t border-border flex items-center justify-end gap-3">
               <Button variant="outline" size="sm" onClick={() => setIsNewTaskModalOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" size="sm" onClick={handleCreateTask}>
-                Create Task
+                {t('common.create')}
               </Button>
             </div>
           </div>

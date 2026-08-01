@@ -6,10 +6,12 @@ import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
 import { SubscriptionService } from '@/features/billing/subscription-service';
 import { UserSubscription } from '@/features/billing/billing-types';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { CreditCard, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function BillingPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string | null>(null);
   const [subscription, setSubscription] = React.useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -58,9 +60,9 @@ export default function BillingPage() {
       {/* Header panel */}
       <div className="border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <CreditCard className="h-6 w-6 text-primary" /> Subscriptions & Billing
+          <CreditCard className="h-6 w-6 text-primary" /> {t('billing.title')}
         </h1>
-        <p className="text-sm text-muted-foreground font-arabic mt-1">خطط الاشتراكات وبوابات الدفع وإدارة الفواتير</p>
+        <p className="text-sm text-muted-foreground font-arabic mt-1">{t('billing.desc')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -97,7 +99,7 @@ export default function BillingPage() {
               <div className="pt-4 border-t border-border/45">
                 {isActive ? (
                   <span className="text-xs font-bold text-primary flex items-center justify-center gap-1 bg-primary/10 h-10 w-full rounded-lg">
-                    <Check className="h-4 w-4" /> Your Active Plan
+                    <Check className="h-4 w-4" /> {t('billing.activePlan')}
                   </span>
                 ) : (
                   <Button 
@@ -124,9 +126,9 @@ export default function BillingPage() {
       <Card className="p-4 border border-primary/20 bg-primary/5 rounded-xl flex items-start space-x-3 select-none">
         <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0 animate-pulse" />
         <div className="space-y-1">
-          <h4 className="text-xs font-bold text-primary uppercase">Secure Checkout Processors Active</h4>
+          <h4 className="text-xs font-bold text-primary uppercase">{t('billing.checkoutActive')}</h4>
           <p className="text-[11px] text-muted-foreground leading-normal">
-             Payment gateways are powered by Stripe. No credit card details are ever stored or processed directly inside our database, maintaining 100% PCI-DSS security compliance.
+             {t('billing.checkoutDesc')}
           </p>
         </div>
       </Card>

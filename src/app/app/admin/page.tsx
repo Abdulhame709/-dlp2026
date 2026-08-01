@@ -6,6 +6,7 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Building, Users, BrainCircuit, Activity, ShieldAlert, HeartPulse } from 'lucide-react';
 import { createClient } from '@/core/database/client';
+import { useLocale } from '@/shared/hooks/use-locale';
 
 interface AuditLogEntry {
   id: string;
@@ -16,6 +17,7 @@ interface AuditLogEntry {
 }
 
 export default function AdminPage() {
+  const { t } = useLocale();
   const [isLoading, setIsLoading] = React.useState(true);
   const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
   const [stats, setStats] = React.useState({
@@ -75,17 +77,17 @@ export default function AdminPage() {
   }, []);
 
   const displayStats = [
-    { name: 'Active Users', count: stats.activeUsers.toLocaleString(), change: 'Live', icon: Users, color: 'text-primary' },
-    { name: 'Organizations', count: stats.organizations.toLocaleString(), change: 'Live', icon: Building, color: 'text-accent' },
-    { name: 'AI Requests', count: stats.aiRequests.toLocaleString(), change: 'Live', icon: BrainCircuit, color: 'text-secondary' },
-    { name: 'System Health', count: 'Active', change: 'Operational', icon: HeartPulse, color: 'text-secondary' },
+    { name: t('admin.activeUsers'), count: stats.activeUsers.toLocaleString(), change: t('admin.live'), icon: Users, color: 'text-primary' },
+    { name: t('admin.organizations'), count: stats.organizations.toLocaleString(), change: t('admin.live'), icon: Building, color: 'text-accent' },
+    { name: t('admin.aiRequests'), count: stats.aiRequests.toLocaleString(), change: t('admin.live'), icon: BrainCircuit, color: 'text-secondary' },
+    { name: t('admin.systemHealth'), count: 'Active', change: t('admin.operational'), icon: HeartPulse, color: 'text-secondary' },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in select-none">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Admin Console</h1>
-        <p className="text-xs text-muted-foreground font-arabic">لوحة التحكم والمراقبة المركزية للمشرفين</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('admin.title')}</h1>
+        <p className="text-xs text-muted-foreground font-arabic">{t('admin.desc')}</p>
       </div>
 
       {/* Grid statistics metrics */}
@@ -120,7 +122,7 @@ export default function AdminPage() {
         <Card className="lg:col-span-2 p-5 space-y-4">
           <CardHeader className="p-0 pb-3 border-b border-border flex flex-row items-center justify-between">
             <span className="text-sm font-bold flex items-center gap-1.5">
-              <ShieldAlert className="h-4.5 w-4.5 text-error" /> SRE Security Audit Log
+              <ShieldAlert className="h-4.5 w-4.5 text-error" /> {t('admin.auditLog')}
             </span>
           </CardHeader>
           <CardContent className="p-0 divide-y divide-border">
@@ -131,7 +133,7 @@ export default function AdminPage() {
               </div>
             ) : auditLogs.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                No audit logs found. Logs will appear here as users interact with the system.
+                {t('admin.noLogs')}
               </div>
             ) : (
               auditLogs.map(audit => (
@@ -150,20 +152,20 @@ export default function AdminPage() {
         {/* AI Resource & Token Monitor */}
         <Card className="p-5 space-y-4">
           <CardHeader className="p-0 pb-3 border-b border-border">
-            <span className="text-sm font-bold">AI Quota & Token Ingestion</span>
+            <span className="text-sm font-bold">{t('admin.aiQuota')}</span>
           </CardHeader>
           <CardContent className="p-0 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold text-muted-foreground select-none">
-                <span>Monthly Token Budget</span>
-                <span>0% Used</span>
+                <span>{t('admin.monthlyBudget')}</span>
+                <span>0% {t('admin.used')}</span>
               </div>
               <div className="h-2 bg-muted/40 rounded-full overflow-hidden border border-border">
                 <div className="h-full bg-primary rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground leading-normal">
-              Unified AI Gateway is automatically distributing requests between OpenAI and lightweight fallback models to optimize budget costs.
+              {t('admin.aiGatewayDesc')}
             </p>
           </CardContent>
         </Card>

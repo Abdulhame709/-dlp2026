@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/shared/stores/layout-store';
 import { AuthService } from '@/core/auth/auth-service';
 import { createClient } from '@/core/database/connection';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { 
   LayoutDashboard, 
   CheckSquare, 
@@ -20,7 +21,8 @@ import {
   Building,
   Bell,
   CreditCard,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -29,6 +31,7 @@ interface SidebarItem {
   path: string;
   icon: React.ComponentType<any>;
   allowedRoles?: string[];
+  adminOnly?: boolean;
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -43,12 +46,15 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Billing', arabicTitle: 'الاشتراكات والمدفوعات', path: '/app/billing', icon: CreditCard, allowedRoles: ['OWNER'] },
   { title: 'Feedback', arabicTitle: 'الملاحظات والشكاوي', path: '/app/feedback', icon: MessageSquare, allowedRoles: ['OWNER', 'ADMIN', 'MEMBER'] },
   { title: 'Settings', arabicTitle: 'الإعدادات والخصوصية', path: '/app/settings', icon: Settings, allowedRoles: ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] },
+  { title: 'Admin', arabicTitle: 'لوحة الإدارة', path: '/app/admin', icon: Shield, allowedRoles: ['OWNER', 'ADMIN'], adminOnly: true },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar } = useLayoutStore();
+  const { locale, t } = useLocale();
   const [role, setRole] = React.useState<string>('OWNER'); // Default to OWNER for full access / mock
+  const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
   const [dir, setDir] = React.useState<'ltr' | 'rtl'>('ltr');
   const [lang, setLang] = React.useState<string>('en');
   const [isMounted, setIsMounted] = React.useState(false);
@@ -69,6 +75,7 @@ export function Sidebar() {
           // Bypassing real database queries when running in local offline mock mode
           if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('mock-')) {
             setRole('OWNER');
+            setIsAdmin(true); // OWNER is admin in mock mode
             return;
           }
 
@@ -82,6 +89,17 @@ export function Sidebar() {
 
           if (membership) {
             setRole(membership.role);
+          }
+
+          // Check admin status from profiles table
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (profile?.is_admin) {
+            setIsAdmin(true);
           }
         }
       } catch (err) {
@@ -130,7 +148,14 @@ export function Sidebar() {
       {/* Sidebar Navigation items filtered dynamically by user role */}
       <nav className="flex-1 space-y-1.5 px-2 py-4 overflow-y-auto">
         {sidebarItems
-          .filter(item => !item.allowedRoles || item.allowedRoles.includes(role))
+          .filter(item => {
+            if (!item.allowedRoles || item.allowedRoles.includes(role)) {
+              // Admin-only items are only visible to admin users
+              if (item.adminOnly && !isAdmin) return false;
+              return true;
+            }
+            return false;
+          })
           .map((item) => {
             const isActive = pathname === item.path;
             const Icon = item.icon;
@@ -153,7 +178,7 @@ export function Sidebar() {
                 {!isSidebarCollapsed && (
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-medium leading-none">
-                      {lang === 'ar' ? item.arabicTitle : item.title}
+                      {t(`sidebar.${item.title.toLowerCase().replace(/\s+/g, '_')}`) || (lang === 'ar' ? item.arabicTitle : item.title)}
                     </span>
                     <span className="text-[10px] opacity-75 font-arabic mt-0.5">
                       {lang === 'ar' ? item.title : item.arabicTitle}
@@ -164,7 +189,7 @@ export function Sidebar() {
                 {/* Tooltip on Collapsed */}
                 {isSidebarCollapsed && (
                   <div className="absolute left-14 hidden group-hover:block bg-card border border-border text-foreground text-xs font-semibold py-1.5 px-3 rounded-md shadow-md z-30 select-none pointer-events-none whitespace-nowrap">
-                    {lang === 'ar' ? item.arabicTitle : item.title} | <span className="font-arabic">{lang === 'ar' ? item.title : item.arabicTitle}</span>
+                    {t(`sidebar.${item.title.toLowerCase().replace(/\s+/g, '_')}`) || (lang === 'ar' ? item.arabicTitle : item.title)} | <span className="font-arabic">{lang === 'ar' ? item.title : item.arabicTitle}</span>
                   </div>
                 )}
               </Link>

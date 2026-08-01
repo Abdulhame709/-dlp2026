@@ -8,6 +8,7 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 import { AnalyticsService } from '@/features/analytics/analytics-service';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
 import { AuthService } from '@/core/auth/auth-service';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { cn } from '@/lib/utils';
 import { 
   Sparkles, 
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
   const [isLoading, setIsLoading] = React.useState(true);
   const [metrics, setMetrics] = React.useState<any>(null);
@@ -75,13 +77,13 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-xl font-black tracking-tight flex items-center gap-2 text-primary">
-              <Sparkles className="h-5 w-5 text-primary animate-pulse" /> Daily AI Execution Review
+              <Sparkles className="h-5 w-5 text-primary animate-pulse" /> {t('dashboard.aiReviewTitle')}
             </h1>
-            <p className="text-xs text-muted-foreground font-arabic">سجل التدقيق والمراجعة الصباحية التلقائية بالذكاء الاصطناعي</p>
+            <p className="text-xs text-muted-foreground font-arabic">{t('dashboard.aiReviewDesc')}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold px-2.5 py-1 bg-secondary/15 text-secondary rounded-full flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5" /> Execution Health: 94% (Stable)
+              <ShieldCheck className="h-3.5 w-3.5" /> {metrics?.executionHealth || t('dashboard.executionHealth')}
             </span>
           </div>
         </div>
@@ -94,20 +96,20 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
             <div className="p-3.5 bg-card border border-border rounded-lg space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Completed Yesterday</span>
-              <span className="text-base font-black text-secondary block">{metrics?.totalTasksCompleted || 4} Tasks</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('dashboard.completedYesterday')}</span>
+              <span className="text-base font-black text-secondary block">{metrics?.totalTasksCompleted || 0} Tasks</span>
             </div>
             <div className="p-3.5 bg-card border border-border rounded-lg space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Pending In Inbox</span>
-              <span className="text-base font-black text-primary block">{metrics?.totalTasksCreated || 5} Tasks</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('dashboard.pendingInbox')}</span>
+              <span className="text-base font-black text-primary block">{metrics?.totalTasksCreated || 0} Tasks</span>
             </div>
             <div className="p-3.5 bg-card border border-border rounded-lg space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">At-Risk / Overdue</span>
-              <span className="text-base font-black text-error block">{metrics?.overdueTasksCount || 1} Task</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('dashboard.atRiskOverdue')}</span>
+              <span className="text-base font-black text-error block">{metrics?.overdueTasksCount || 0} Task</span>
             </div>
             <div className="p-3.5 bg-card border border-border rounded-lg space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Focus Suggested Time</span>
-              <span className="text-base font-black text-accent block">09:00 - 11:00 AM</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('dashboard.suggestedFocus')}</span>
+              <span className="text-base font-black text-accent block">{metrics?.focusTime || '—'}</span>
             </div>
           </div>
         )}
@@ -120,117 +122,121 @@ export default function DashboardPage() {
         
         {/* Widget 1: Today's Focus */}
         <Widget
-          title="Today's Focus"
-          arabicTitle="التركيز اليومي"
+          title={t('dashboard.todayFocus')}
+          arabicTitle={t('dashboard.todayFocusArabic')}
           icon={CheckCircle}
           isLoading={isLoading}
           actions={
             <Button variant="ghost" className="h-6 px-1.5 text-[10px]">
-              View All
+              {t('dashboard.viewAll')}
             </Button>
           }
         >
           <div className="space-y-3.5 flex-1 flex flex-col justify-between">
             <div className="space-y-2.5">
-              <div className="flex items-center space-x-2.5">
-                <input type="checkbox" className="h-4 w-4 text-primary rounded" defaultChecked />
-                <span className="text-xs text-muted-foreground line-through">Initialize Project Structure</span>
-              </div>
-              <div className="flex items-center space-x-2.5">
-                <input type="checkbox" className="h-4 w-4 text-primary rounded" />
-                <span className="text-xs font-semibold text-foreground">Deploy Database Schema with RLS</span>
-              </div>
-              <div className="flex items-center space-x-2.5">
-                <input type="checkbox" className="h-4 w-4 text-primary rounded" />
-                <span className="text-xs font-semibold text-foreground">Setup Authentication Pages</span>
-              </div>
+              {(metrics?.todayFocusItems || []).length > 0 ? (
+                (metrics?.todayFocusItems || []).map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-center space-x-2.5">
+                    <input type="checkbox" className="h-4 w-4 text-primary rounded" defaultChecked={item.done} />
+                    <span className={cn('text-xs', item.done ? 'text-muted-foreground line-through' : 'font-semibold text-foreground')}>{item.title}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-4 text-center">
+                  <CheckCircle className="h-6 w-6 text-muted-foreground/40 mb-2" />
+                  <p className="text-xs text-muted-foreground">{t('common.emptyState')}</p>
+                </div>
+              )}
             </div>
-            <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Progress: 33%</span>
-              <span className="font-semibold text-primary">1 of 3 Done</span>
-            </div>
+            {metrics?.todayFocusItems && metrics.todayFocusItems.length > 0 && (
+              <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>{t('dashboard.progressLabel')} {metrics?.focusProgress || 0}%</span>
+                <span className="font-semibold text-primary">{t('dashboard.tasksDone', { done: metrics?.focusDone || 0, total: metrics?.focusTotal || 0 })}</span>
+              </div>
+            )}
           </div>
         </Widget>
 
         {/* Widget 2: AI Daily Plan */}
         <Widget
-          title="AI Daily Plan"
-          arabicTitle="خطة الذكاء الاصطناعي"
+          title={t('dashboard.aiDailyPlan')}
+          arabicTitle={t('dashboard.aiDailyPlanArabic')}
           icon={BrainCircuit}
           isLoading={isLoading}
         >
           <div className="space-y-3 flex-1 flex flex-col justify-between select-none">
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40 text-xs">
-                <span className="font-semibold text-primary">Morning</span>
-                <span className="text-muted-foreground">09:00 - 11:00</span>
+                <span className="font-semibold text-primary">{t('dashboard.morningSlot')}</span>
+                <span className="text-muted-foreground">{metrics?.morningSlot || '09:00 - 11:00'}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40 text-xs">
-                <span className="font-semibold text-accent">Afternoon</span>
-                <span className="text-muted-foreground">13:00 - 15:00</span>
+                <span className="font-semibold text-accent">{t('dashboard.afternoonSlot')}</span>
+                <span className="text-muted-foreground">{metrics?.afternoonSlot || '13:00 - 15:00'}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40 text-xs">
-                <span className="font-semibold text-secondary">Evening</span>
-                <span className="text-muted-foreground">17:00 - 18:30</span>
+                <span className="font-semibold text-secondary">{t('dashboard.eveningSlot')}</span>
+                <span className="text-muted-foreground">{metrics?.eveningSlot || '17:00 - 18:30'}</span>
               </div>
             </div>
             <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1 mt-2">
-              <Clock className="h-3 w-3" /> Auto-synchronized with Yemen timezone
+              <Clock className="h-3 w-3" /> {t('dashboard.timezoneNote')}
             </p>
           </div>
         </Widget>
 
         {/* Widget 3: Productivity Analytics */}
         <Widget
-          title="Productivity Score"
-          arabicTitle="مؤشرات الإنتاجية"
+          title={t('dashboard.productivityScore')}
+          arabicTitle={t('dashboard.productivityScoreArabic')}
           icon={TrendingUp}
           isLoading={isLoading}
         >
           <div className="space-y-3.5 flex-1 flex flex-col justify-between text-center select-none">
             <div className="space-y-1.5 pt-2">
-              <span className="text-4xl font-extrabold text-primary">{metrics?.productivityScore || 87}%</span>
+              <span className="text-4xl font-extrabold text-primary">{metrics?.productivityScore || 0}%</span>
               <p className="text-xs font-bold text-secondary flex items-center justify-center gap-1">
-                <Zap className="h-3.5 w-3.5" /> High Energy Block
+                <Zap className="h-3.5 w-3.5" /> {t('dashboard.energyBlock')}
               </p>
             </div>
             <p className="text-[11px] text-muted-foreground leading-normal">
-              You complete complex tasks 1.4x faster before noon. Keep it up!
+              {t('dashboard.behaviorInsight')}
             </p>
           </div>
         </Widget>
 
         {/* Widget 4: Habit Tracker */}
         <Widget
-          title="Habit Streaks"
-          arabicTitle="العادات الصحية"
+          title={t('dashboard.habitStreaks')}
+          arabicTitle={t('dashboard.habitStreaksArabic')}
           icon={Flame}
           isLoading={isLoading}
         >
           <div className="space-y-3.5 flex-1 flex flex-col justify-between select-none">
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">Deep Work Sessions</span>
-                <span className="font-semibold text-warning flex items-center">
-                  <Flame className="h-3.5 w-3.5 fill-current mr-0.5" /> 5 days
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">Continuous Reading</span>
-                <span className="font-semibold text-warning flex items-center">
-                  <Flame className="h-3.5 w-3.5 fill-current mr-0.5" /> 18 days
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">Hydration Check</span>
-                <span className="font-semibold text-muted-foreground">0 days</span>
-              </div>
+              {(metrics?.habitStreaks || []).length > 0 ? (
+                (metrics?.habitStreaks || []).map((habit: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span className="font-medium">{habit.name}</span>
+                    <span className={cn('font-semibold flex items-center', habit.streak > 0 ? 'text-warning' : 'text-muted-foreground')}>
+                      {habit.streak > 0 && <Flame className="h-3.5 w-3.5 fill-current mr-0.5" />} {habit.streak} days
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-4 text-center">
+                  <Flame className="h-6 w-6 text-muted-foreground/40 mb-2" />
+                  <p className="text-xs text-muted-foreground">{t('common.emptyState')}</p>
+                </div>
+              )}
             </div>
-            <div className="pt-2 border-t border-border flex justify-center">
-              <Button variant="outline" className="h-7 px-2.5 text-[10px]">
-                Complete All Habits
-              </Button>
-            </div>
+            {(metrics?.habitStreaks || []).length > 0 && (
+              <div className="pt-2 border-t border-border flex justify-center">
+                <Button variant="outline" className="h-7 px-2.5 text-[10px]">
+                  {t('dashboard.completeAllHabits')}
+                </Button>
+              </div>
+            )}
           </div>
         </Widget>
 
@@ -246,7 +252,7 @@ export default function DashboardPage() {
           <Card className="lg:col-span-2 p-6 space-y-4 shadow-sm select-none">
             <div className="flex items-center justify-between border-b border-border pb-3.5">
               <span className="text-sm font-bold flex items-center gap-1.5 text-secondary">
-                <Award className="h-5 w-5 text-secondary animate-pulse" /> AI Execution Coach Advice
+                <Award className="h-5 w-5 text-secondary animate-pulse" /> {t('dashboard.coachAdviceTitle')}
               </span>
             </div>
             
@@ -261,7 +267,7 @@ export default function DashboardPage() {
           <Card className="p-6 space-y-4 shadow-sm select-none">
             <div className="border-b border-border pb-3.5 flex items-center justify-between">
               <span className="text-sm font-bold flex items-center gap-1.5 text-primary">
-                <Sparkles className="h-4.5 w-4.5 text-primary" /> Next Best Actions
+                <Sparkles className="h-4.5 w-4.5 text-primary" /> {t('dashboard.nextActionsTitle')}
               </span>
             </div>
 

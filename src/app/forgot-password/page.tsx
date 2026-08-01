@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { AuthService } from '@/core/auth/auth-service';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Loader2, ArrowRight } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
+  const { t, dir } = useLocale();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -18,7 +20,6 @@ export default function ForgotPasswordPage() {
     setSuccess(false);
 
     try {
-      // Determine the redirect target URL dynamically based on environment
       const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
       const redirectTo = `${origin}/reset-password`;
 
@@ -36,7 +37,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-foreground">
+    <div dir={dir} className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-foreground">
       <div className="w-full max-w-md bg-card border border-border rounded-xl p-8 space-y-6 shadow-lg">
         {/* Branding header */}
         <div className="flex flex-col items-center text-center space-y-2 select-none">
@@ -46,7 +47,7 @@ export default function ForgotPasswordPage() {
           <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Cortex AI
           </span>
-          <p className="text-sm text-muted-foreground">Recover your password securely</p>
+          <p className="text-sm text-muted-foreground">{t('auth.forgotPasswordDesc')}</p>
         </div>
 
         {error && (
@@ -58,26 +59,26 @@ export default function ForgotPasswordPage() {
         {success ? (
           <div className="space-y-4 text-center">
             <div className="bg-primary/10 border border-primary/20 text-primary text-sm rounded-lg p-4 font-medium animate-fade">
-              📩 Check your email! We have sent a recovery link with further instructions.
+              📩 {t('auth.checkEmail')}
             </div>
             <Link
               href="/login"
               className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-border bg-card text-sm font-medium hover:bg-muted transition-colors cursor-pointer select-none"
             >
-              Return to Login
+              {t('auth.returnToLogin')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-muted-foreground" htmlFor="email">
-                Email Address
+                {t('auth.emailLabel')}
               </label>
               <input
                 className="w-full h-11 px-3 bg-muted border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                 id="email"
                 type="email"
-                placeholder="name@company.com"
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -94,7 +95,7 @@ export default function ForgotPasswordPage() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  Send Recovery Link <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('auth.sendRecoveryLink')} <ArrowRight className={dir === 'rtl' ? 'mr-2 h-4 w-4' : 'ml-2 h-4 w-4'} />
                 </>
               )}
             </button>
@@ -103,9 +104,9 @@ export default function ForgotPasswordPage() {
 
         {!success && (
           <div className="text-center text-sm text-muted-foreground pt-2 border-t border-border select-none">
-            Remembered your password?{' '}
+            {t('auth.rememberedPassword')}{' '}
             <Link href="/login" className="font-semibold text-primary hover:text-primary/80 transition-colors">
-              Sign in
+              {t('auth.signInBtn')}
             </Link>
           </div>
         )}

@@ -6,11 +6,13 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { AuthService } from '@/core/auth/auth-service';
 import { ActivityService } from '@/core/services/domain-services';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Send, Sparkles, MessageSquare, AlertTriangle, Lightbulb, Check, Loader2 } from 'lucide-react';
 
 type FeedbackType = 'BUG' | 'FEATURE_REQUEST' | 'USABILITY' | 'OTHER';
 
 export default function FeedbackPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState('11111111-1111-1111-1111-111111111111');
   
   // Form States
@@ -64,9 +66,9 @@ export default function FeedbackPage() {
       {/* Header panel */}
       <div className="border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <MessageSquare className="h-6 w-6 text-primary animate-pulse" /> Beta Feedback System
+          <MessageSquare className="h-6 w-6 text-primary animate-pulse" /> {t('feedback.title')}
         </h1>
-        <p className="text-sm text-muted-foreground font-arabic mt-1">نظام رصد البلاغات وطلبات الميزات والملاحظات للنسخة التجريبية</p>
+        <p className="text-sm text-muted-foreground font-arabic mt-1">{t('feedback.desc')}</p>
       </div>
 
       {success ? (
@@ -75,13 +77,13 @@ export default function FeedbackPage() {
             <Check className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-bold">Thank you for your feedback!</h3>
+            <h3 className="text-sm font-bold">{t('feedback.successTitle')}</h3>
             <p className="text-xs text-muted-foreground leading-normal">
-              Your report has been successfully ingested into our security and audit pipelines. Our SRE team will review it shortly.
+              {t('feedback.successDesc')}
             </p>
           </div>
           <Button variant="outline" size="sm" className="h-9 text-xs" onClick={() => setSuccess(false)}>
-            Submit Another Report
+            {t('feedback.submitAnother')}
           </Button>
         </Card>
       ) : (
@@ -100,7 +102,7 @@ export default function FeedbackPage() {
                     type === 'FEATURE_REQUEST' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
                   )}
                 >
-                  <Lightbulb className="h-4 w-4" /> Feature Request
+                  <Lightbulb className="h-4 w-4" /> {t('feedback.featureRequest')}
                 </button>
                 <button
                   type="button"
@@ -110,14 +112,14 @@ export default function FeedbackPage() {
                     type === 'BUG' ? 'border-error bg-error/5 text-error' : 'border-border text-muted-foreground hover:bg-muted'
                   )}
                 >
-                  <AlertTriangle className="h-4 w-4" /> Bug Report
+                  <AlertTriangle className="h-4 w-4" /> {t('feedback.bugReport')}
                 </button>
               </div>
             </div>
 
-            <Input 
-              label="Subject Title"
-              placeholder="Summary of your feedback"
+            <Input
+              label={t('feedback.subjectLabel')}
+              placeholder={t('feedback.subjectPlaceholder')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               disabled={submitting}
@@ -125,9 +127,9 @@ export default function FeedbackPage() {
             />
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Detailed Description</label>
+              <label className="text-xs font-medium text-foreground">{t('feedback.detailedLabel')}</label>
               <textarea
-                placeholder="What is your request or issue? Provide steps to reproduce if reporting a bug."
+                placeholder={t('feedback.detailedPlaceholder')}
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 disabled={submitting}
@@ -137,21 +139,21 @@ export default function FeedbackPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Urgency Level</label>
+              <label className="text-xs font-medium text-foreground">{t('feedback.urgencyLabel')}</label>
               <select
                 value={urgency}
                 onChange={(e) => setUrgency(e.target.value)}
                 disabled={submitting}
                 className="w-full h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
               >
-                <option value="HIGH">High (حرج)</option>
-                <option value="MEDIUM">Medium (متوسط)</option>
-                <option value="LOW">Low (منخفض)</option>
+                <option value="HIGH">{t('feedback.highUrgency')}</option>
+                <option value="MEDIUM">{t('feedback.mediumUrgency')}</option>
+                <option value="LOW">{t('feedback.lowUrgency')}</option>
               </select>
             </div>
 
             <Button variant="primary" type="submit" className="w-full h-10 text-xs shrink-0" disabled={submitting}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4 mr-2" /> Submit Feedback</>}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4 mr-2" /> {t('feedback.submitBtn')}</>}
             </Button>
           </form>
         </Card>

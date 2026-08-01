@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthService } from '@/core/auth/auth-service';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Loader2, ArrowRight } from 'lucide-react';
 
 export default function ResetPasswordPage() {
+  const { t, dir } = useLocale();
   const router = useRouter();
 
   const [password, setPassword] = useState('');
@@ -22,7 +24,7 @@ export default function ResetPasswordPage() {
     setSuccess(false);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordMismatch'));
       setLoading(false);
       return;
     }
@@ -42,7 +44,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-foreground">
+    <div dir={dir} className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-foreground">
       <div className="w-full max-w-md bg-card border border-border rounded-xl p-8 space-y-6 shadow-lg">
         {/* Branding header */}
         <div className="flex flex-col items-center text-center space-y-2 select-none">
@@ -52,7 +54,7 @@ export default function ResetPasswordPage() {
           <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Cortex AI
           </span>
-          <p className="text-sm text-muted-foreground">Setup your new password securely</p>
+          <p className="text-sm text-muted-foreground">{t('auth.resetPasswordDesc')}</p>
         </div>
 
         {error && (
@@ -64,26 +66,26 @@ export default function ResetPasswordPage() {
         {success ? (
           <div className="space-y-4 text-center">
             <div className="bg-primary/10 border border-primary/20 text-primary text-sm rounded-lg p-4 font-medium animate-fade">
-              🎉 Password successfully updated! You can now log in using your new password.
+              🎉 {t('auth.passwordUpdated')}
             </div>
             <Link
               href="/login"
               className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer select-none"
             >
-              Sign In
+              {t('auth.signInBtn')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-muted-foreground" htmlFor="password">
-                New Password
+                {t('auth.newPasswordLabel')}
               </label>
               <input
                 className="w-full h-11 px-3 bg-muted border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                 id="password"
                 type="password"
-                placeholder="Min 6 characters"
+                placeholder={t('auth.minChars')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -94,13 +96,13 @@ export default function ResetPasswordPage() {
 
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-muted-foreground" htmlFor="confirmPassword">
-                Confirm Password
+                {t('auth.confirmPasswordLabel')}
               </label>
               <input
                 className="w-full h-11 px-3 bg-muted border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                 id="confirmPassword"
                 type="password"
-                placeholder="Re-enter password"
+                placeholder={t('auth.confirmPasswordPlaceholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -118,7 +120,7 @@ export default function ResetPasswordPage() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  Update Password <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('auth.updatePasswordBtn')} <ArrowRight className={dir === 'rtl' ? 'mr-2 h-4 w-4' : 'ml-2 h-4 w-4'} />
                 </>
               )}
             </button>

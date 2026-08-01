@@ -6,9 +6,11 @@ import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
 import { NotificationService } from '@/features/notifications/notification-service';
 import { NotificationItem } from '@/features/notifications/notification-types';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Bell, Check, Sparkles, Clock } from 'lucide-react';
 
 export default function NotificationsPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string | null>(null);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -57,13 +59,13 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Bell className="h-6 w-6 text-primary" /> Notifications & Alerts
+            <Bell className="h-6 w-6 text-primary" /> {t('notifications.title')}
           </h1>
-          <p className="text-sm text-muted-foreground font-arabic mt-1">سجل التنبيهات وإشعارات المساعد الذكي والأمان</p>
+          <p className="text-sm text-muted-foreground font-arabic mt-1">{t('notifications.desc')}</p>
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" className="h-10 text-xs" onClick={handleMarkAllRead}>
-            <Check className="h-4 w-4 mr-2" /> Mark All Read
+            <Check className="h-4 w-4 mr-2" /> {t('notifications.markAllRead')}
           </Button>
         )}
       </div>
@@ -77,8 +79,8 @@ export default function NotificationsPage() {
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-xl">
             <Bell className="h-12 w-12 text-muted-foreground/60 mb-3" />
-            <h3 className="text-sm font-bold">You are all caught up!</h3>
-            <p className="text-xs text-muted-foreground mt-1">There are no unread notifications or alerts in your inbox.</p>
+            <h3 className="text-sm font-bold">{t('notifications.noNotifications')}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{t('notifications.noNotificationsDesc')}</p>
           </div>
         ) : (
           notifications.map((notif) => (
