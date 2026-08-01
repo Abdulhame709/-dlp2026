@@ -92,7 +92,7 @@ export default function FeedbackPage() {
             
             {/* Feedback Type Selection Grid */}
             <div className="space-y-1.5">
-              <span className="text-xs font-bold text-muted-foreground uppercase">Feedback Type</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase">{t('feedback.feedbackType')}</span>
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <button
                   type="button"
@@ -163,9 +163,9 @@ export default function FeedbackPage() {
       <Card className="p-4 border border-primary/20 bg-primary/5 rounded-xl flex items-start space-x-3 select-none">
         <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0 animate-pulse" />
         <div className="space-y-1">
-          <h4 className="text-xs font-bold text-primary uppercase">Cortex AI Private Beta active</h4>
+          <h4 className="text-xs font-bold text-primary uppercase">{t('feedback.betaNote')}</h4>
           <p className="text-[11px] text-muted-foreground leading-normal">
-             Thank you for testing our Next-Gen AI Productivity Operating System! All your submissions are securely logged and directly analyzed by our engineering team.
+             {t('feedback.betaNoteDesc')}
           </p>
         </div>
       </Card>

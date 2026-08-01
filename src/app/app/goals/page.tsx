@@ -192,7 +192,7 @@ export default function GoalsPage() {
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" /> {t('goals.activeObjectives')}
           </h2>
-          <p className="text-[10px] text-muted-foreground font-arabic">{t('goals.activeObjectivesArabic')}</p>
+          <p className="text-[10px] text-muted-foreground font-arabic">{t('goals.activeObjectives')}</p>
         </div>
 
         {goalsLoading ? (

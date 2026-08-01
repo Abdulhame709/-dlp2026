@@ -7,10 +7,10 @@ import { AuthService } from '@/core/auth/auth-service';
 import { SettingsService } from '@/features/settings/settings-service';
 import { useLocale } from '@/shared/hooks/use-locale';
 import { UserSettingsProfile } from '@/features/settings/settings-types';
-import { Settings, Shield, User, Bell, Database, Key, Sparkles } from 'lucide-react';
+import { Settings, Shield, User, Bell, Database, Key, Sparkles, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { t, locale } = useLocale();
+  const { t, locale, dir } = useLocale();
   const [userId, setUserId] = React.useState<string | null>(null);
   const [fullName, setFullName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -24,10 +24,9 @@ export default function SettingsPage() {
         const user = await AuthService.getCurrentUser();
         if (user) {
           setUserId(user.id);
-          setFullName(user.fullName || 'Cortex User');
-          setEmail(user.email || 'user@cortexai.com');
+          setFullName(user.fullName || 'User');
+          setEmail(user.email || '');
 
-          // Load real settings from service
           const userSettings = await SettingsService.getUserSettings(user.id);
           setSettings(userSettings);
           if (userSettings.fullName) setFullName(userSettings.fullName);
@@ -58,7 +57,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in select-none p-6 text-foreground">
+    <div dir={dir} className="max-w-4xl mx-auto space-y-6 animate-fade-in select-none p-6 text-foreground">
       {/* Header panel */}
       <div className="border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -75,13 +74,13 @@ export default function SettingsPage() {
             <User className="h-4 w-4 mr-2" /> {t('settings.personalInfo')}
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start h-10 text-xs">
-            <Shield className="h-4 w-4 mr-2" /> Security & RLS
+            <Shield className="h-4 w-4 mr-2" /> {t('settings.security')}
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start h-10 text-xs">
-            <Bell className="h-4 w-4 mr-2" /> {t('common.active')}
+            <Bell className="h-4 w-4 mr-2" /> {t('settings.notifications')}
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start h-10 text-xs">
-            <Database className="h-4 w-4 mr-2" /> Data Export
+            <Database className="h-4 w-4 mr-2" /> {t('settings.dataExport')}
           </Button>
         </div>
 
@@ -144,18 +143,18 @@ export default function SettingsPage() {
                 onClick={handleSave}
                 disabled={isSaving}
               >
-                {isSaving ? t('common.submitting') : saveSuccess ? '✓ Saved!' : t('settings.savePreferences')}
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : saveSuccess ? `✓ ${t('settings.saved')}` : t('settings.savePreferences')}
               </Button>
             </div>
           </Card>
 
-          {/* Secure API Credentials notice */}
+          {/* Security & Access notice */}
           <Card className="p-4 border border-primary/20 bg-primary/5 rounded-xl space-y-2">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-primary">
-              <Key className="h-4 w-4" /> {t('settings.accessActive')}
+              <Key className="h-4 w-4" /> {t('settings.securityActive')}
             </h3>
             <p className="text-[11px] text-muted-foreground leading-normal">
-              {t('settings.accessDesc')}
+              {t('settings.securityDesc')}
             </p>
           </Card>
         </div>

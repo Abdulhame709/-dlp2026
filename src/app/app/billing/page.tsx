@@ -82,11 +82,11 @@ export default function BillingPage() {
                     <h3 className="text-base font-bold text-foreground">{tier.name}</h3>
                     <p className="text-xs text-muted-foreground leading-normal">{tier.desc}</p>
                   </div>
-                  <span className="text-2xl font-black text-primary shrink-0">{tier.price} <span className="text-xs font-semibold text-muted-foreground">/mo</span></span>
+                  <span className="text-2xl font-black text-primary shrink-0">{tier.price} <span className="text-xs font-semibold text-muted-foreground">{t('billing.perMonth')}</span></span>
                 </div>
 
                 <div className="space-y-2.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Features included</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('billing.featuresIncluded')}</span>
                   {tier.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center space-x-2 text-xs text-muted-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0" />
@@ -113,7 +113,7 @@ export default function BillingPage() {
                       }
                     }}
                   >
-                    Upgrade to {tier.name.split(' ')[0]} Plan
+                    {t('billing.upgradeTo', { plan: tier.name.split(' ')[0] })}
                   </Button>
                 )}
               </div>

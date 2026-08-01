@@ -80,7 +80,7 @@ export default function AdminPage() {
     { name: t('admin.activeUsers'), count: stats.activeUsers.toLocaleString(), change: t('admin.live'), icon: Users, color: 'text-primary' },
     { name: t('admin.organizations'), count: stats.organizations.toLocaleString(), change: t('admin.live'), icon: Building, color: 'text-accent' },
     { name: t('admin.aiRequests'), count: stats.aiRequests.toLocaleString(), change: t('admin.live'), icon: BrainCircuit, color: 'text-secondary' },
-    { name: t('admin.systemHealth'), count: 'Active', change: t('admin.operational'), icon: HeartPulse, color: 'text-secondary' },
+    { name: t('admin.systemHealth'), count: t('admin.activeStatus'), change: t('admin.operational'), icon: HeartPulse, color: 'text-secondary' },
   ];
 
   return (

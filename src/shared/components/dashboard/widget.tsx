@@ -2,11 +2,9 @@ import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useLocale } from '@/shared/hooks/use-locale';
 
 export interface WidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
-  arabicTitle?: string;
   description?: string;
   icon?: React.ComponentType<any>;
   isLoading?: boolean;
@@ -17,7 +15,6 @@ export interface WidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Widget({
   className,
   title,
-  arabicTitle,
   description,
   icon: Icon,
   isLoading,
@@ -26,9 +23,6 @@ export function Widget({
   children,
   ...props
 }: WidgetProps) {
-  const { locale } = useLocale();
-  const displayTitle = locale === 'ar' && arabicTitle ? arabicTitle : title;
-  const displaySubtitle = locale === 'ar' && arabicTitle ? title : arabicTitle;
   return (
     <Card className={cn('h-full flex flex-col p-5', className)} {...props}>
       {/* Widget Header area */}
@@ -36,12 +30,7 @@ export function Widget({
         <div className="space-y-1 select-none">
           <CardTitle className="flex items-center text-base font-bold tracking-tight">
             {Icon && <Icon className="h-4.5 w-4.5 text-primary mr-2 shrink-0" />}
-            {displayTitle}
-            {displaySubtitle && (
-              <span className="text-[10px] font-arabic text-muted-foreground ml-2">
-                | {displaySubtitle}
-              </span>
-            )}
+            {title}
           </CardTitle>
           {description && <CardDescription className="text-xs">{description}</CardDescription>}
         </div>

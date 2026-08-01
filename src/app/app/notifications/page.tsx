@@ -74,7 +74,7 @@ export default function NotificationsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Bell className="h-12 w-12 text-muted-foreground/60 mb-3 animate-pulse" />
-            <p className="text-xs text-muted-foreground">Loading notifications...</p>
+            <p className="text-xs text-muted-foreground">{t('notifications.loadingNotifications')}</p>
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-xl">

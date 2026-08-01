@@ -160,6 +160,13 @@ export default function AIAssistantPage() {
       setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), aiMsg] } : null);
     } catch (err: any) {
       console.error('AI Request Failed:', err.message);
+      // Show error message in chat
+      const errorMsg = await ConversationService.saveMessage(
+        activeSession.id,
+        'ASSISTANT',
+        t('aiAssistant.featureUnavailable')
+      );
+      setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), errorMsg] } : null);
     } finally {
       setIsThinking(false);
     }
@@ -210,7 +217,10 @@ export default function AIAssistantPage() {
 
   // AI Feature Trigger: Prioritize My Tasks
   const triggerPrioritize = async () => {
-    if (!contextTaskId) return; // No task context available
+    if (!contextTaskId) {
+      alert(t('aiAssistant.noTaskContext'));
+      return;
+    }
     setIsFeatureLoading('PRIORITIZE');
     try {
       const response = await AIAssistantService.prioritizeTask(
@@ -220,6 +230,9 @@ export default function AIAssistantPage() {
         'Analyzing task priority'
       );
       setAiPrioritization(response);
+    } catch (err) {
+      console.error('AI Prioritize failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -231,6 +244,9 @@ export default function AIAssistantPage() {
     try {
       const response = await AIAssistantService.generateDailyPlan(userId);
       setAiDailyPlan(response);
+    } catch (err) {
+      console.error('AI Planner failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -238,7 +254,10 @@ export default function AIAssistantPage() {
 
   // AI Feature Trigger: Task Breakdown
   const triggerBreakdown = async () => {
-    if (!contextTaskId) return; // No task context available
+    if (!contextTaskId) {
+      alert(t('aiAssistant.noTaskContext'));
+      return;
+    }
     setIsFeatureLoading('BREAKDOWN');
     try {
       const response = await AIAssistantService.breakdownTask(
@@ -248,6 +267,9 @@ export default function AIAssistantPage() {
         'Breakdown into subtasks'
       );
       setAiBreakdown(response);
+    } catch (err) {
+      console.error('AI Breakdown failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -259,6 +281,9 @@ export default function AIAssistantPage() {
     try {
       const response = await AIAssistantService.getCoachingAdvice(userId);
       setAiCoachAdvice(response);
+    } catch (err) {
+      console.error('AI Coach failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }

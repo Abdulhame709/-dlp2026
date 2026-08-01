@@ -123,7 +123,6 @@ export default function DashboardPage() {
         {/* Widget 1: Today's Focus */}
         <Widget
           title={t('dashboard.todayFocus')}
-          arabicTitle={t('dashboard.todayFocusArabic')}
           icon={CheckCircle}
           isLoading={isLoading}
           actions={
@@ -160,7 +159,6 @@ export default function DashboardPage() {
         {/* Widget 2: AI Daily Plan */}
         <Widget
           title={t('dashboard.aiDailyPlan')}
-          arabicTitle={t('dashboard.aiDailyPlanArabic')}
           icon={BrainCircuit}
           isLoading={isLoading}
         >
@@ -188,7 +186,6 @@ export default function DashboardPage() {
         {/* Widget 3: Productivity Analytics */}
         <Widget
           title={t('dashboard.productivityScore')}
-          arabicTitle={t('dashboard.productivityScoreArabic')}
           icon={TrendingUp}
           isLoading={isLoading}
         >
@@ -208,7 +205,6 @@ export default function DashboardPage() {
         {/* Widget 4: Habit Tracker */}
         <Widget
           title={t('dashboard.habitStreaks')}
-          arabicTitle={t('dashboard.habitStreaksArabic')}
           icon={Flame}
           isLoading={isLoading}
         >
