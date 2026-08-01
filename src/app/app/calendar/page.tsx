@@ -32,7 +32,7 @@ export default function CalendarPage() {
         </p>
         <div className="flex items-center gap-2 mt-6">
           <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-xs font-semibold text-primary">AI-Powered Scheduling</span>
+          <span className="text-xs font-semibold text-primary">{t('calendar.aiPoweredScheduling')}</span>
         </div>
       </div>
     </div>

@@ -137,9 +137,9 @@ export default function OrganizationsPage() {
     if (!editOrgName.trim() || !editOrgId) return;
     setEditSubmitting(true);
     try {
-      const updated = await OrganizationService.getOrganization(editOrgId);
+      const updated = await OrganizationService.updateOrganization(editOrgId, editOrgName);
       if (updated) {
-        setOrganizations(prev => prev.map(o => o.id === editOrgId ? { ...o, name: editOrgName } : o));
+        setOrganizations(prev => prev.map(o => o.id === editOrgId ? { ...o, name: updated.name } : o));
       }
     } catch (err) {
       console.error('Failed to update organization:', err);

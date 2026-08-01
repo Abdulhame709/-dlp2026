@@ -66,6 +66,7 @@ export function TopNav() {
     try {
       // 1. Persist locally
       localStorage.setItem('language', nextLang);
+      document.cookie = `language=${nextLang};path=/;max-age=31536000;samesite=lax`;
       setLang(nextLang);
 
       // 2. Apply direction and locale to HTML root node

@@ -152,8 +152,8 @@ export default function AIAssistantPage() {
       const userMsg = await ConversationService.saveMessage(activeSession.id, 'USER', userMessageContent);
       setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), userMsg] } : null);
 
-      // 2. Dispatch query to AI Assistant Service
-      const response = await AIAssistantService.getCoachingAdvice(userId);
+      // 2. Dispatch query to AI Assistant Service — pass the user's actual message
+      const response = await AIAssistantService.getCoachingAdvice(userId, userMessageContent);
       
       // 3. Save AI Response
       const aiMsg = await ConversationService.saveMessage(activeSession.id, 'ASSISTANT', response.coachingAdvice);
@@ -490,8 +490,8 @@ export default function AIAssistantPage() {
             {aiPrioritization && (
               <div className="p-2.5 bg-primary/5 border border-primary/20 rounded-lg text-[10px] space-y-1.5 animate-fade-in leading-relaxed">
                 <div className="flex justify-between font-bold">
-                  <span>Suggested: <strong className="text-error uppercase">{aiPrioritization.suggestedPriority}</strong></span>
-                  <span className="text-primary">Score: {aiPrioritization.score}%</span>
+                  <span>{t('aiAssistant.suggested')} <strong className="text-error uppercase">{aiPrioritization.suggestedPriority}</strong></span>
+                  <span className="text-primary">{t('aiAssistant.score')} {aiPrioritization.score}%</span>
                 </div>
                 <p className="text-muted-foreground text-[10px]">{aiPrioritization.reasoning}</p>
               </div>
@@ -515,7 +515,7 @@ export default function AIAssistantPage() {
             </Button>
             {aiDailyPlan && (
               <div className="p-2.5 bg-accent/5 border border-accent/20 rounded-lg text-[10px] space-y-2 animate-fade-in leading-relaxed">
-                <div className="font-bold text-accent">Timeline: {aiDailyPlan.date}</div>
+                <div className="font-bold text-accent">{t('aiAssistant.timeline')} {aiDailyPlan.date}</div>
                 {aiDailyPlan.scheduleBlocks.map((block: any, idx: number) => (
                   <div key={idx} className="flex justify-between p-1 bg-card rounded border border-border">
                     <span>{block.time} - {block.taskTitle}</span>
@@ -543,7 +543,7 @@ export default function AIAssistantPage() {
             </Button>
             {aiCoachAdvice && (
               <div className="p-2.5 bg-secondary/5 border border-secondary/20 rounded-lg text-[10px] space-y-1.5 animate-fade-in leading-relaxed">
-                <p className="font-bold text-secondary">Behavioral Advice:</p>
+                <p className="font-bold text-secondary">{t('aiAssistant.behavioralAdvice')}</p>
                 <p className="text-muted-foreground">{aiCoachAdvice.coachingAdvice}</p>
               </div>
             )}
@@ -566,7 +566,7 @@ export default function AIAssistantPage() {
             </Button>
             {aiBreakdown && (
               <div className="p-2.5 bg-purple-500/5 border border-purple-500/20 rounded-lg text-[10px] space-y-2 animate-fade-in leading-relaxed">
-                <p className="font-bold text-purple-500">Subtask Items:</p>
+                <p className="font-bold text-purple-500">{t('aiAssistant.subtaskItems')}</p>
                 {aiBreakdown.subtasks.map((st: any, idx: number) => (
                   <div key={idx} className="flex justify-between p-1 bg-card rounded border border-border">
                     <span>{st.title}</span>

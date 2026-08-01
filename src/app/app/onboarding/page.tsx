@@ -5,12 +5,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { useTheme } from '@/shared/hooks/use-theme';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { AuthService } from '@/core/auth/auth-service';
 import { submitOnboarding } from './actions';
 import { Sparkles, ArrowRight, Check, Loader2 } from 'lucide-react';
 
 export default function OnboardingPage() {
   const { setTheme: setSystemTheme } = useTheme();
+  const { t } = useLocale();
 
   const [step, setStep] = React.useState(1);
   const [userId, setUserId] = React.useState('11111111-1111-1111-1111-111111111111');
@@ -46,6 +48,7 @@ export default function OnboardingPage() {
     setLanguage(selectedLanguage);
     if (typeof window !== 'undefined') {
       localStorage.setItem('language', selectedLanguage);
+      document.cookie = `language=${selectedLanguage};path=/;max-age=31536000;samesite=lax`;
     }
   };
 
@@ -97,10 +100,10 @@ export default function OnboardingPage() {
             <Sparkles className="h-6 w-6" />
           </div>
           <CardTitle className="text-xl font-bold tracking-tight">
-            Welcome to Cortex AI
+            {t('onboarding.title')}
           </CardTitle>
           <CardDescription className="text-xs">
-            Step {step} of 3: Setup your intelligent productivity workspace
+            {t('onboarding.desc', { step })}
           </CardDescription>
         </CardHeader>
 
@@ -108,11 +111,11 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground leading-normal">
-                Let's start with your identity. What should we call you every day?
+                {t('onboarding.step1Desc')}
               </p>
               <Input
-                label="Full Name"
-                placeholder="Enter your full name"
+                label={t('onboarding.fullNameLabel')}
+                placeholder={t('onboarding.fullNamePlaceholder')}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 disabled={submitting}
@@ -123,7 +126,7 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground leading-normal">
-                Choose your preferred interface theme. You can change this later at any time.
+                {t('onboarding.step2Desc')}
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -133,7 +136,7 @@ export default function OnboardingPage() {
                     theme === 'light' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  Light Mode
+                  {t('onboarding.lightMode')}
                 </button>
                 <button
                   onClick={() => handleSelectTheme('dark')}
@@ -142,7 +145,7 @@ export default function OnboardingPage() {
                     theme === 'dark' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  Dark Mode
+                  {t('onboarding.darkMode')}
                 </button>
               </div>
             </div>
@@ -151,7 +154,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-4 select-none">
               <p className="text-xs text-muted-foreground leading-normal">
-                Select your default platform language to optimize Arabic and English support.
+                {t('onboarding.step3Desc')}
               </p>
               <div className="space-y-2">
                 <button
@@ -161,7 +164,7 @@ export default function OnboardingPage() {
                     language === 'ar' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  <span>العربية (Cairo Arabic)</span>
+                  <span>{t('onboarding.arabic')}</span>
                   {language === 'ar' && <Check className="h-4 w-4" />}
                 </button>
                 <button
@@ -171,7 +174,7 @@ export default function OnboardingPage() {
                     language === 'en' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  <span>English (Inter Sans)</span>
+                  <span>{t('onboarding.english')}</span>
                   {language === 'en' && <Check className="h-4 w-4" />}
                 </button>
               </div>
@@ -181,14 +184,14 @@ export default function OnboardingPage() {
 
         <CardFooter className="p-0 pt-4 border-t border-border mt-4 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-semibold">
-            {step === 3 ? 'Almost ready!' : 'Configuring...'}
+            {step === 3 ? t('onboarding.almostReady') : t('onboarding.configuring')}
           </span>
           <Button variant="primary" size="sm" onClick={handleNext} disabled={submitting}>
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                {step === 3 ? 'Launch Platform' : 'Continue'}{' '}
+                {step === 3 ? t('common.launch') : t('common.continue')}{' '}
                 <ArrowRight className="h-4 w-4 ml-1.5 shrink-0" />
               </>
             )}

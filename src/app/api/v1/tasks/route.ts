@@ -12,6 +12,13 @@ const createTaskApiSchema = z.object({
   status: z.enum(['INBOX', 'PLANNED', 'IN_PROGRESS', 'WAITING', 'COMPLETED', 'ARCHIVED']).optional(),
 });
 
+const updateTaskApiSchema = z.object({
+  title: z.string().min(1, { message: 'Title is required' }).max(255).optional(),
+  description: z.string().optional(),
+  priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']).optional(),
+  status: z.enum(['INBOX', 'PLANNED', 'IN_PROGRESS', 'WAITING', 'COMPLETED', 'ARCHIVED']).optional(),
+});
+
 /**
  * Resolves the authenticated user ID from the Supabase session.
  * Returns 401 if no valid session is found.
@@ -79,6 +86,86 @@ export async function POST(request: NextRequest) {
       message: 'Task created successfully via REST API.',
       timestamp: new Date().toISOString(),
     }, { status: 201 });
+  } catch (err: any) {
+    return ErrorHandler.handle(err);
+  }
+}
+
+/**
+ * PUT /api/v1/tasks - Update an existing task via API
+ * Protected by CSRF verification and rate limiting.
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const requestOrigin = request.headers.get('origin') || undefined;
+    if (!SecurityUtils.verifyCSRF(request.headers, requestOrigin)) {
+      return NextResponse.json(
+        { status: 'error', message: 'CSRF verification failed.' },
+        { status: 403 }
+      );
+    }
+
+    const userId = await getAuthenticatedUserId(request);
+    if (typeof userId !== 'string') return userId; // 401 response
+
+    const body = await request.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { status: 'error', message: 'Task ID is required for updates.' },
+        { status: 400 }
+      );
+    }
+
+    const validated = updateTaskApiSchema.parse(updates);
+    const task = await TaskService.updateTask(id, validated);
+
+    return NextResponse.json({
+      status: 'success',
+      data: task,
+      message: 'Task updated successfully via REST API.',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return ErrorHandler.handle(err);
+  }
+}
+
+/**
+ * DELETE /api/v1/tasks - Delete a task via API
+ * Protected by CSRF verification and rate limiting.
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const requestOrigin = request.headers.get('origin') || undefined;
+    if (!SecurityUtils.verifyCSRF(request.headers, requestOrigin)) {
+      return NextResponse.json(
+        { status: 'error', message: 'CSRF verification failed.' },
+        { status: 403 }
+      );
+    }
+
+    const userId = await getAuthenticatedUserId(request);
+    if (typeof userId !== 'string') return userId; // 401 response
+
+    const { searchParams } = new URL(request.url);
+    const taskId = searchParams.get('id');
+
+    if (!taskId) {
+      return NextResponse.json(
+        { status: 'error', message: 'Task ID is required for deletion.' },
+        { status: 400 }
+      );
+    }
+
+    await TaskService.deleteTask(taskId);
+
+    return NextResponse.json({
+      status: 'success',
+      message: 'Task deleted successfully via REST API.',
+      timestamp: new Date().toISOString(),
+    });
   } catch (err: any) {
     return ErrorHandler.handle(err);
   }

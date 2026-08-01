@@ -47,7 +47,7 @@ export class SecurityUtils {
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;"
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;"
     );
     response.headers.set(
       'Strict-Transport-Security',
@@ -57,7 +57,7 @@ export class SecurityUtils {
   }
 
   /**
-   * CSRF protection check for mutations
+   * CSRF protection check for mutations — strict origin matching
    */
   static verifyCSRF(requestHeaders: Headers, requestOrigin?: string): boolean {
     const origin = requestHeaders.get('origin');
@@ -66,9 +66,36 @@ export class SecurityUtils {
 
     if (!origin && !referer) return false;
 
-    // Check if origin matches host
-    if (origin && host && !origin.includes(host)) {
-      return false;
+    // Strict origin matching: the origin must exactly match the host
+    if (origin && host) {
+      try {
+        const originUrl = new URL(origin);
+        const originHost = originUrl.hostname;
+        const hostWithoutPort = host.split(':')[0];
+
+        // Reject if origin hostname doesn't match the host
+        if (originHost !== hostWithoutPort) {
+          return false;
+        }
+      } catch {
+        // Invalid origin URL — reject
+        return false;
+      }
+    }
+
+    // Fallback: check referer header if origin is missing
+    if (!origin && referer && host) {
+      try {
+        const refererUrl = new URL(referer);
+        const refererHost = refererUrl.hostname;
+        const hostWithoutPort = host.split(':')[0];
+
+        if (refererHost !== hostWithoutPort) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
     }
 
     return true;

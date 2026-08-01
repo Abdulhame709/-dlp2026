@@ -421,7 +421,7 @@ export default function TasksPage() {
             className="h-8 text-xs cursor-pointer"
             onClick={() => setActiveView('LIST')}
           >
-            <List className="h-4 w-4 mr-1 shrink-0" /> List
+            <List className="h-4 w-4 mr-1 shrink-0" /> {t('tasks.viewList')}
           </Button>
           <Button 
             variant={activeView === 'KANBAN' ? 'primary' : 'ghost'} 
@@ -429,7 +429,7 @@ export default function TasksPage() {
             className="h-8 text-xs cursor-pointer"
             onClick={() => setActiveView('KANBAN')}
           >
-            <Layers className="h-4 w-4 mr-1 shrink-0" /> Kanban
+            <Layers className="h-4 w-4 mr-1 shrink-0" /> {t('tasks.viewKanban')}
           </Button>
           <Button 
             variant={activeView === 'CALENDAR' ? 'primary' : 'ghost'} 
@@ -437,7 +437,7 @@ export default function TasksPage() {
             className="h-8 text-xs cursor-pointer"
             onClick={() => setActiveView('CALENDAR')}
           >
-            <Calendar className="h-4 w-4 mr-1 shrink-0" /> Calendar
+            <Calendar className="h-4 w-4 mr-1 shrink-0" /> {t('tasks.viewCalendar')}
           </Button>
           <Button 
             variant={activeView === 'TIMELINE' ? 'primary' : 'ghost'} 
@@ -445,7 +445,7 @@ export default function TasksPage() {
             className="h-8 text-xs cursor-pointer"
             onClick={() => setActiveView('TIMELINE')}
           >
-            <GanttChart className="h-4 w-4 mr-1 shrink-0" /> Timeline
+            <GanttChart className="h-4 w-4 mr-1 shrink-0" /> {t('tasks.viewTimeline')}
           </Button>
         </div>
       </div>
@@ -489,11 +489,11 @@ export default function TasksPage() {
             className="h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
           >
             <option value="ALL">{t('tasks.allStatuses')}</option>
-            <option value="INBOX">Inbox</option>
-            <option value="PLANNED">Planned</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="WAITING">Waiting</option>
-            <option value="COMPLETED">Completed</option>
+            <option value="INBOX">{t('tasks.statusInbox')}</option>
+            <option value="PLANNED">{t('tasks.statusPlanned')}</option>
+            <option value="IN_PROGRESS">{t('tasks.statusInProgress')}</option>
+            <option value="WAITING">{t('tasks.statusWaiting')}</option>
+            <option value="COMPLETED">{t('tasks.statusCompleted')}</option>
           </select>
 
           <select
@@ -502,10 +502,10 @@ export default function TasksPage() {
             className="h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
           >
             <option value="ALL">{t('tasks.allPriorities')}</option>
-            <option value="CRITICAL">Critical</option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
+            <option value="CRITICAL">{t('tasks.priorityCritical')}</option>
+            <option value="HIGH">{t('tasks.priorityHigh')}</option>
+            <option value="MEDIUM">{t('tasks.priorityMedium')}</option>
+            <option value="LOW">{t('tasks.priorityLow')}</option>
           </select>
 
           <Button
@@ -533,13 +533,13 @@ export default function TasksPage() {
           </span>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="h-8 text-xs text-secondary hover:bg-secondary/10" onClick={handleBulkComplete}>
-              <CheckSquare className="h-4 w-4 mr-1" /> Complete
+              <CheckSquare className="h-4 w-4 mr-1" /> {t('tasks.complete')}
             </Button>
             <Button variant="ghost" size="sm" className="h-8 text-xs text-error hover:bg-error/10" onClick={handleBulkDelete}>
-              <Trash2 className="h-4 w-4 mr-1" /> Delete
+              <Trash2 className="h-4 w-4 mr-1" /> {t('common.delete')}
             </Button>
             <Button variant="outline" size="sm" className="h-8 text-xs text-muted-foreground" onClick={() => setSelectedTasks([])}>
-              Clear
+              {t('tasks.clear')}
             </Button>
           </div>
         </div>
@@ -678,7 +678,7 @@ export default function TasksPage() {
           {/* 5.3 Calendar Grid View */}
           {activeView === 'CALENDAR' && (
             <div className="grid grid-cols-7 gap-4">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
+              {[t('tasks.daySun'), t('tasks.dayMon'), t('tasks.dayTue'), t('tasks.dayWed'), t('tasks.dayThu'), t('tasks.dayFri'), t('tasks.daySat')].map((day, i) => (
                 <div key={day} className="flex flex-col border border-border bg-card rounded-xl p-3 min-h-[300px]">
                   <div className="text-xs font-bold text-muted-foreground mb-3 text-center border-b border-border pb-1.5 select-none">{day}</div>
                   <div className="space-y-2 flex-1 overflow-y-auto">
@@ -754,7 +754,7 @@ export default function TasksPage() {
 
               {selectedTask.description && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground">Description</h4>
+                  <h4 className="text-xs font-bold text-foreground">{t('common.description')}</h4>
                   <p className="text-xs text-muted-foreground leading-normal p-3 rounded-lg bg-muted/30 border border-border">{selectedTask.description}</p>
                 </div>
               )}
@@ -762,21 +762,21 @@ export default function TasksPage() {
               {/* Status and Priority pills */}
               <div className="grid grid-cols-2 gap-4 select-none">
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Status</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('common.status')}</span>
                   <select
                     value={selectedTask.status}
                     onChange={(e) => handleUpdateStatus(selectedTask.id, e.target.value as TaskStatus)}
                     className="w-full h-9 px-3 border border-border rounded-lg bg-card text-xs font-semibold text-foreground outline-none cursor-pointer"
                   >
-                    <option value="INBOX">Inbox</option>
-                    <option value="PLANNED">Planned</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="WAITING">Waiting</option>
-                    <option value="COMPLETED">Completed</option>
+                    <option value="INBOX">{t('tasks.statusInbox')}</option>
+                    <option value="PLANNED">{t('tasks.statusPlanned')}</option>
+                    <option value="IN_PROGRESS">{t('tasks.statusInProgress')}</option>
+                    <option value="WAITING">{t('tasks.statusWaiting')}</option>
+                    <option value="COMPLETED">{t('tasks.statusCompleted')}</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Priority</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('common.priority')}</span>
                   <div className="h-9 border border-border rounded-lg bg-card px-3 flex items-center justify-between text-xs font-bold uppercase text-foreground">
                     {selectedTask.priority}
                   </div>
@@ -815,13 +815,13 @@ export default function TasksPage() {
                     {/* Suggestion 2: Priority and Duration */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-2 bg-card rounded border border-border space-y-1">
-                        <span className="font-bold text-primary block">Priority: {aiTaskSuggestions.suggestedPriority}</span>
+                        <span className="font-bold text-primary block">{t('tasks.priorityLabel', { priority: aiTaskSuggestions.suggestedPriority })}</span>
                         <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiPriority}>
                           {t('tasks.applyPriority')}
                         </Button>
                       </div>
                       <div className="p-2 bg-card rounded border border-border space-y-1">
-                        <span className="font-bold text-primary block">Duration: {aiTaskSuggestions.suggestedDuration} mins</span>
+                        <span className="font-bold text-primary block">{t('tasks.durationMins', { mins: aiTaskSuggestions.suggestedDuration })}</span>
                         <Button variant="ghost" className="h-5 px-1.5 text-[9px] hover:bg-muted" onClick={applyAiDuration}>
                           {t('tasks.applyDuration')}
                         </Button>
@@ -956,10 +956,10 @@ export default function TasksPage() {
                     onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
                     className="w-full h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
                   >
-                    <option value="CRITICAL">Critical</option>
-                    <option value="HIGH">High</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="LOW">Low</option>
+                    <option value="CRITICAL">{t('tasks.priorityCritical')}</option>
+                    <option value="HIGH">{t('tasks.priorityHigh')}</option>
+                    <option value="MEDIUM">{t('tasks.priorityMedium')}</option>
+                    <option value="LOW">{t('tasks.priorityLow')}</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
@@ -969,9 +969,9 @@ export default function TasksPage() {
                     onChange={(e) => setNewStatus(e.target.value as TaskStatus)}
                     className="w-full h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
                   >
-                    <option value="INBOX">Inbox</option>
-                    <option value="PLANNED">Planned</option>
-                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="INBOX">{t('tasks.statusInbox')}</option>
+                    <option value="PLANNED">{t('tasks.statusPlanned')}</option>
+                    <option value="IN_PROGRESS">{t('tasks.statusInProgress')}</option>
                   </select>
                 </div>
               </div>

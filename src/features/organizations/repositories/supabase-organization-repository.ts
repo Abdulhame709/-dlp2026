@@ -80,4 +80,32 @@ export class SupabaseOrganizationRepository implements IOrganizationRepository {
         createdAt: new Date(row.organization.created_at),
       }));
   }
+
+  async createOrganization(name: string, ownerId: string, logoUrl?: string): Promise<OrganizationEntity | null> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('organizations')
+      .insert({ name, owner_id: ownerId, logo_url: logoUrl || null, created_by: ownerId })
+      .select()
+      .single();
+
+    if (error || !data) return null;
+
+    // Also add the creator as OWNER member
+    await supabase
+      .from('organization_members')
+      .insert({ organization_id: data.id, user_id: ownerId, role: 'OWNER', created_by: ownerId });
+
+    return this.mapRowToEntity(data);
+  }
+
+  async deleteOrganization(id: string): Promise<boolean> {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('organizations')
+      .delete()
+      .eq('id', id);
+
+    return !error;
+  }
 }

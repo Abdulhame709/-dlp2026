@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Building, Users, BrainCircuit, Activity, ShieldAlert, HeartPulse } from 'lucide-react';
-import { createClient } from '@/core/database/client';
+import { createClient } from '@/core/database/connection';
 import { useLocale } from '@/shared/hooks/use-locale';
 
 interface AuditLogEntry {

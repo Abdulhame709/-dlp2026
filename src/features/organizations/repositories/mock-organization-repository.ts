@@ -37,4 +37,24 @@ export class MockOrganizationRepository implements IOrganizationRepository {
   async getUserOrganizations(userId: string): Promise<OrganizationEntity[]> {
     return mockOrganizations.filter(o => o.ownerId === userId);
   }
+
+  async createOrganization(name: string, ownerId: string, logoUrl?: string): Promise<OrganizationEntity | null> {
+    const newOrg: OrganizationEntity = {
+      id: `org-${Date.now()}`,
+      name,
+      ownerId,
+      logoUrl: logoUrl || null,
+      subscriptionPlan: 'FREE',
+      createdAt: new Date(),
+    };
+    mockOrganizations.push(newOrg);
+    return newOrg;
+  }
+
+  async deleteOrganization(id: string): Promise<boolean> {
+    const idx = mockOrganizations.findIndex(o => o.id === id);
+    if (idx === -1) return false;
+    mockOrganizations.splice(idx, 1);
+    return true;
+  }
 }
