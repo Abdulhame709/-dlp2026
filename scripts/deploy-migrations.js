@@ -1,8 +1,15 @@
 const fs = require('fs');
-const path = require('fs');
+const path = require('path');
 const { Client } = require('pg');
 
-const directUrl = "postgresql://postgres.giypbmdsuspypbgudgap:8abduh772641299@aws-0-us-east-1.pooler.supabase.com:5432/postgres";
+// Database connection URL resolved from environment variable — no hardcoded credentials
+const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (!directUrl) {
+  console.error('🛑 FATAL: DIRECT_URL or DATABASE_URL environment variable is required.');
+  console.error('   Set DIRECT_URL=postgresql://user:pass@host:5432/db before running this script.');
+  process.exit(1);
+}
 
 async function runMigration() {
   console.log('🚀 SRE Database Tool: Initiating direct PostgreSQL migration...');
@@ -17,7 +24,7 @@ async function runMigration() {
     console.log('✅ Successfully connected to Supabase PostgreSQL!');
 
     // Read the migration SQL file
-    const migrationPath = require('path').resolve(__dirname, '../prisma/migrations/20260727204500_init_cortex_db/migration.sql');
+    const migrationPath = path.resolve(__dirname, '../prisma/migrations/20260727204500_init_cortex_db/migration.sql');
     console.log(`Reading migration SQL from: ${migrationPath}`);
     const sql = fs.readFileSync(migrationPath, 'utf8');
 

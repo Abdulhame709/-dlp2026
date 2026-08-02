@@ -5,6 +5,7 @@ import { ConversationSession, ChatMessage } from '@/features/ai/chat/conversatio
 import { ConversationService } from '@/features/ai/chat/conversation-service';
 import { AIAssistantService } from '@/features/ai/core/AIAssistantService';
 import { AuthService } from '@/core/auth/auth-service';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { AIMemoryRecord } from '@/features/ai/memory/memory-types';
 import { LongTermMemoryManager } from '@/features/ai/memory/long-term-memory';
 import { Button } from '@/shared/components/ui/button';
@@ -31,6 +32,7 @@ import {
 } from 'lucide-react';
 
 export default function AIAssistantPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
 
   // 1. Core State
@@ -52,6 +54,29 @@ export default function AIAssistantPage() {
 
   // 3. Context Visualization State
   const [showContextVisualizer, setShowContextVisualizer] = React.useState(true);
+
+  // 4. Dynamic task context for AI features (replaces hardcoded task ID)
+  const [contextTaskId, setContextTaskId] = React.useState<string>('');
+  const [contextTaskTitle, setContextTaskTitle] = React.useState<string>('');
+
+  // Load first task for AI feature context
+  React.useEffect(() => {
+    async function loadTaskContext() {
+      try {
+        const { TaskService } = await import('@/features/tasks/services/task-service');
+        const tasks = await TaskService.getUserTasks(userId);
+        if (tasks.length > 0) {
+          setContextTaskId(tasks[0].id);
+          setContextTaskTitle(tasks[0].title);
+        }
+      } catch {
+        // No tasks available — features will use empty context
+      }
+    }
+    if (userId && userId !== '11111111-1111-1111-1111-111111111111') {
+      loadTaskContext();
+    }
+  }, [userId]);
 
   // Load current user details on mount to resolve session dynamically
   React.useEffect(() => {
@@ -127,14 +152,21 @@ export default function AIAssistantPage() {
       const userMsg = await ConversationService.saveMessage(activeSession.id, 'USER', userMessageContent);
       setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), userMsg] } : null);
 
-      // 2. Dispatch query to AI Assistant Service
-      const response = await AIAssistantService.getCoachingAdvice(userId);
+      // 2. Dispatch query to AI Assistant Service — pass the user's actual message
+      const response = await AIAssistantService.getCoachingAdvice(userId, userMessageContent);
       
       // 3. Save AI Response
       const aiMsg = await ConversationService.saveMessage(activeSession.id, 'ASSISTANT', response.coachingAdvice);
       setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), aiMsg] } : null);
     } catch (err: any) {
       console.error('AI Request Failed:', err.message);
+      // Show error message in chat
+      const errorMsg = await ConversationService.saveMessage(
+        activeSession.id,
+        'ASSISTANT',
+        t('aiAssistant.featureUnavailable')
+      );
+      setActiveSession(prev => prev ? { ...prev, messages: [...(prev.messages || []), errorMsg] } : null);
     } finally {
       setIsThinking(false);
     }
@@ -185,15 +217,22 @@ export default function AIAssistantPage() {
 
   // AI Feature Trigger: Prioritize My Tasks
   const triggerPrioritize = async () => {
+    if (!contextTaskId) {
+      alert(t('aiAssistant.noTaskContext'));
+      return;
+    }
     setIsFeatureLoading('PRIORITIZE');
     try {
       const response = await AIAssistantService.prioritizeTask(
         userId,
-        '66666666-6666-6666-6666-666666666661',
-        'Deploy Database Schema with RLS',
-        'Setting up Supabase RLS'
+        contextTaskId,
+        contextTaskTitle,
+        'Analyzing task priority'
       );
       setAiPrioritization(response);
+    } catch (err) {
+      console.error('AI Prioritize failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -205,6 +244,9 @@ export default function AIAssistantPage() {
     try {
       const response = await AIAssistantService.generateDailyPlan(userId);
       setAiDailyPlan(response);
+    } catch (err) {
+      console.error('AI Planner failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -212,15 +254,22 @@ export default function AIAssistantPage() {
 
   // AI Feature Trigger: Task Breakdown
   const triggerBreakdown = async () => {
+    if (!contextTaskId) {
+      alert(t('aiAssistant.noTaskContext'));
+      return;
+    }
     setIsFeatureLoading('BREAKDOWN');
     try {
       const response = await AIAssistantService.breakdownTask(
         userId,
-        '66666666-6666-6666-6666-666666666661',
-        'Deploy Database Schema with RLS',
-        'Audit RLS guidelines'
+        contextTaskId,
+        contextTaskTitle,
+        'Breakdown into subtasks'
       );
       setAiBreakdown(response);
+    } catch (err) {
+      console.error('AI Breakdown failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -232,6 +281,9 @@ export default function AIAssistantPage() {
     try {
       const response = await AIAssistantService.getCoachingAdvice(userId);
       setAiCoachAdvice(response);
+    } catch (err) {
+      console.error('AI Coach failed:', err);
+      alert(t('aiAssistant.featureUnavailable'));
     } finally {
       setIsFeatureLoading(null);
     }
@@ -245,7 +297,7 @@ export default function AIAssistantPage() {
       {/* ========================================== */}
       <div className="border border-border bg-card rounded-xl flex flex-col overflow-hidden h-full select-none shadow-sm">
         <div className="p-4 border-b border-border flex items-center justify-between">
-          <span className="text-sm font-bold">Conversations</span>
+          <span className="text-sm font-bold">{t('aiAssistant.conversations')}</span>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handleStartNewSession}>
             <Plus className="h-4 w-4" />
           </Button>
@@ -258,7 +310,7 @@ export default function AIAssistantPage() {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : sessions.length === 0 ? (
-            <div className="text-center py-10 text-xs text-muted-foreground">No chats found.</div>
+            <div className="text-center py-10 text-xs text-muted-foreground">{t('aiAssistant.noChats')}</div>
           ) : (
             sessions.map(session => {
               const isActive = activeSession?.id === session.id;
@@ -300,7 +352,7 @@ export default function AIAssistantPage() {
           <div className="flex items-center space-x-2">
             <BrainCircuit className="h-5 w-5 text-primary shrink-0" />
             <span className="text-xs font-bold text-foreground">
-              {activeSession ? activeSession.title : 'AI Executive Assistant'}
+              {activeSession ? activeSession.title : t('aiAssistant.title')}
             </span>
           </div>
         </div>
@@ -310,14 +362,14 @@ export default function AIAssistantPage() {
           {!activeSession ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 select-none">
               <BrainCircuit className="h-12 w-12 text-muted-foreground/60 mb-3 animate-pulse" />
-              <h3 className="text-sm font-bold">Select or start a chat</h3>
-              <p className="text-xs text-muted-foreground mt-1">Cortex AI Assistant is ready to schedule, prioritize, and plan with you.</p>
+              <h3 className="text-sm font-bold">{t('aiAssistant.selectOrStart')}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t('aiAssistant.selectOrStartDesc')}</p>
             </div>
           ) : (activeSession.messages || []).length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 select-none">
               <Sparkles className="h-10 w-10 text-primary mb-3" />
-              <h3 className="text-xs font-bold">Chat session is empty</h3>
-              <p className="text-[11px] text-muted-foreground mt-1">Ask the assistant: "Help me breakdown my goals" or write a direct prompt below.</p>
+              <h3 className="text-xs font-bold">{t('aiAssistant.emptyChat')}</h3>
+              <p className="text-[11px] text-muted-foreground mt-1">{t('aiAssistant.emptyChatDesc')}</p>
             </div>
           ) : (
             (activeSession.messages || []).map(message => {
@@ -364,7 +416,7 @@ export default function AIAssistantPage() {
               <span className="h-2 w-2 rounded-full bg-primary animate-bounce" />
               <span className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
               <span className="h-2 w-2 rounded-full bg-primary animate-bounce delay-300" />
-              <span>Cortex is thinking...</span>
+              <span>{t('aiAssistant.thinking')}</span>
             </div>
           )}
         </div>
@@ -372,7 +424,7 @@ export default function AIAssistantPage() {
         {/* Input prompt tray */}
         <div className="p-4 border-t border-border bg-muted/20 flex gap-2">
           <Input
-            placeholder="Type your instruction or asking here... (Max 1000 chars)"
+            placeholder={t('aiAssistant.inputPlaceholder')}
             value={promptInput}
             onChange={(e) => setPromptInput(e.target.value.slice(0, 1000))}
             onKeyDown={(e) => {
@@ -396,7 +448,7 @@ export default function AIAssistantPage() {
         <div>
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase">
-              <BrainCircuit className="h-4 w-4 text-primary animate-pulse" /> Personal AI Memory
+              <BrainCircuit className="h-4 w-4 text-primary animate-pulse" /> {t('aiAssistant.personalMemory')}
             </span>
           </div>
           <div className="space-y-2 pt-2">
@@ -415,31 +467,31 @@ export default function AIAssistantPage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-bold tracking-tight">AI Workspace Tools</h2>
-          <p className="text-[10px] text-muted-foreground font-arabic">الأدوات الأربعة للذكاء الاصطناعي</p>
+          <h2 className="text-sm font-bold tracking-tight">{t('aiAssistant.workspaceTools')}</h2>
+          <p className="text-[10px] text-muted-foreground font-arabic">{t('aiAssistant.workspaceToolsDesc')}</p>
         </div>
 
         <div className="space-y-4">
           {/* Tool A: AI Task Prioritizer */}
           <Card className="p-4 space-y-3">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-primary">
-              <Sparkles className="h-4 w-4" /> AI Prioritizer
+              <Sparkles className="h-4 w-4" /> {t('aiAssistant.prioritizer')}
             </h3>
-            <p className="text-[10px] text-muted-foreground">Analyze and organize task queue priorities.</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-8 text-[11px]" 
+            <p className="text-[10px] text-muted-foreground">{t('aiAssistant.prioritizerDesc')}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-[11px]"
               onClick={triggerPrioritize}
               isLoading={isFeatureLoading === 'PRIORITIZE'}
             >
-              Analyze My Tasks
+              {t('aiAssistant.analyzeMyTasks')}
             </Button>
             {aiPrioritization && (
               <div className="p-2.5 bg-primary/5 border border-primary/20 rounded-lg text-[10px] space-y-1.5 animate-fade-in leading-relaxed">
                 <div className="flex justify-between font-bold">
-                  <span>Suggested: <strong className="text-error uppercase">{aiPrioritization.suggestedPriority}</strong></span>
-                  <span className="text-primary">Score: {aiPrioritization.score}%</span>
+                  <span>{t('aiAssistant.suggested')} <strong className="text-error uppercase">{aiPrioritization.suggestedPriority}</strong></span>
+                  <span className="text-primary">{t('aiAssistant.score')} {aiPrioritization.score}%</span>
                 </div>
                 <p className="text-muted-foreground text-[10px]">{aiPrioritization.reasoning}</p>
               </div>
@@ -449,21 +501,21 @@ export default function AIAssistantPage() {
           {/* Tool B: AI Daily Planner */}
           <Card className="p-4 space-y-3">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-accent">
-              <Calendar className="h-4 w-4" /> AI Daily Planner
+              <Calendar className="h-4 w-4" /> {t('aiAssistant.dailyPlanner')}
             </h3>
-            <p className="text-[10px] text-muted-foreground">Construct optimized scheduled calendar blocks.</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-8 text-[11px]" 
+            <p className="text-[10px] text-muted-foreground">{t('aiAssistant.dailyPlannerDesc')}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-[11px]"
               onClick={triggerPlanner}
               isLoading={isFeatureLoading === 'PLANNER'}
             >
-              Generate Daily Schedule
+              {t('aiAssistant.generateSchedule')}
             </Button>
             {aiDailyPlan && (
               <div className="p-2.5 bg-accent/5 border border-accent/20 rounded-lg text-[10px] space-y-2 animate-fade-in leading-relaxed">
-                <div className="font-bold text-accent">Timeline: {aiDailyPlan.date}</div>
+                <div className="font-bold text-accent">{t('aiAssistant.timeline')} {aiDailyPlan.date}</div>
                 {aiDailyPlan.scheduleBlocks.map((block: any, idx: number) => (
                   <div key={idx} className="flex justify-between p-1 bg-card rounded border border-border">
                     <span>{block.time} - {block.taskTitle}</span>
@@ -477,21 +529,21 @@ export default function AIAssistantPage() {
           {/* Tool C: AI Productivity Coach */}
           <Card className="p-4 space-y-3">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-secondary">
-              <TrendingUp className="h-4.5 w-4.5 text-secondary" /> AI Productivity Coach
+              <TrendingUp className="h-4.5 w-4.5 text-secondary" /> {t('aiAssistant.productivityCoach')}
             </h3>
-            <p className="text-[10px] text-muted-foreground">Get behavioral feedback from SRE telemetry.</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-8 text-[11px]" 
+            <p className="text-[10px] text-muted-foreground">{t('aiAssistant.productivityCoachDesc')}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-[11px]"
               onClick={triggerCoach}
               isLoading={isFeatureLoading === 'COACH'}
             >
-              Ask AI Coach
+              {t('aiAssistant.askCoach')}
             </Button>
             {aiCoachAdvice && (
               <div className="p-2.5 bg-secondary/5 border border-secondary/20 rounded-lg text-[10px] space-y-1.5 animate-fade-in leading-relaxed">
-                <p className="font-bold text-secondary">Behavioral Advice:</p>
+                <p className="font-bold text-secondary">{t('aiAssistant.behavioralAdvice')}</p>
                 <p className="text-muted-foreground">{aiCoachAdvice.coachingAdvice}</p>
               </div>
             )}
@@ -500,21 +552,21 @@ export default function AIAssistantPage() {
           {/* Tool D: AI Task Breakdown */}
           <Card className="p-4 space-y-3">
             <h3 className="text-xs font-bold flex items-center gap-1.5 text-purple-500">
-              <Layers className="h-4 w-4" /> AI Task Breakdown
+              <Layers className="h-4 w-4" /> {t('aiAssistant.taskBreakdown')}
             </h3>
-            <p className="text-[10px] text-muted-foreground">Breakdown parent tasks into checklist steps.</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-8 text-[11px]" 
+            <p className="text-[10px] text-muted-foreground">{t('aiAssistant.taskBreakdownDesc')}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-[11px]"
               onClick={triggerBreakdown}
               isLoading={isFeatureLoading === 'BREAKDOWN'}
             >
-              Breakdown Task
+              {t('aiAssistant.breakdownTask')}
             </Button>
             {aiBreakdown && (
               <div className="p-2.5 bg-purple-500/5 border border-purple-500/20 rounded-lg text-[10px] space-y-2 animate-fade-in leading-relaxed">
-                <p className="font-bold text-purple-500">Subtask Items:</p>
+                <p className="font-bold text-purple-500">{t('aiAssistant.subtaskItems')}</p>
                 {aiBreakdown.subtasks.map((st: any, idx: number) => (
                   <div key={idx} className="flex justify-between p-1 bg-card rounded border border-border">
                     <span>{st.title}</span>
@@ -532,23 +584,23 @@ export default function AIAssistantPage() {
         <div className="pt-4 border-t border-border">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-              <Info className="h-3.5 w-3.5 text-primary" /> Active AI Context Map
+              <Info className="h-3.5 w-3.5 text-primary" /> {t('aiAssistant.activeContext')}
             </span>
             <Button variant="ghost" className="h-4 px-1 text-[9px] text-muted-foreground" onClick={() => setShowContextVisualizer(!showContextVisualizer)}>
-              {showContextVisualizer ? 'Hide' : 'Show'}
+              {showContextVisualizer ? t('aiAssistant.hide') : t('aiAssistant.show')}
             </Button>
           </div>
 
           {showContextVisualizer && (
             <div className="p-3 bg-muted/40 border border-border rounded-lg text-[9px] space-y-1.5 leading-normal font-medium text-muted-foreground select-none animate-fade-in">
               <div className="flex items-center gap-1">
-                <User className="h-3 w-3 text-primary" /> <strong>User Context:</strong> Yemen, Cairo locale, 9-17h hours
+                <User className="h-3 w-3 text-primary" /> <strong>{t('aiAssistant.userContext')}</strong> {sessions.length} active sessions
               </div>
               <div className="flex items-center gap-1">
-                <CheckCircle className="h-3 w-3 text-secondary" /> <strong>Task Context:</strong> 2 active tasks, priorities loaded
+                <CheckCircle className="h-3 w-3 text-secondary" /> <strong>{t('aiAssistant.taskContext')}</strong> {contextTaskTitle || 'No active task'}
               </div>
               <div className="flex items-center gap-1">
-                <Building className="h-3 w-3 text-accent" /> <strong>Org Context:</strong> Cortex Founders, multi-tenant RLS active
+                <Building className="h-3 w-3 text-accent" /> <strong>{t('aiAssistant.orgContext')}</strong> Multi-tenant RLS active
               </div>
             </div>
           )}

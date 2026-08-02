@@ -7,18 +7,28 @@ import { Input } from '@/shared/components/ui/input';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { ProjectService } from '@/core/services/domain-services';
 import { AuthService } from '@/core/auth/auth-service';
-import { Folder, Plus, Sparkles, Calendar, ListFilter, X, Trash2, Loader2 } from 'lucide-react';
+import { useLocale } from '@/shared/hooks/use-locale';
+import { Folder, Plus, Sparkles, Calendar, ListFilter, X, Trash2, Loader2, Pencil } from 'lucide-react';
 
 export default function ProjectsPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
   const [projects, setProjects] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Modal State bindings
+  // Create Modal State bindings
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [newTitle, setNewTitle] = React.useState('');
   const [newDesc, setNewDesc] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
+
+  // Edit Modal State bindings
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [editProjectId, setEditProjectId] = React.useState<string>('');
+  const [editTitle, setEditTitle] = React.useState('');
+  const [editDesc, setEditDesc] = React.useState('');
+  const [editStatus, setEditStatus] = React.useState<string>('ACTIVE');
+  const [editSubmitting, setEditSubmitting] = React.useState(false);
 
   // Load current user details on mount to resolve session dynamically
   React.useEffect(() => {
@@ -84,6 +94,39 @@ export default function ProjectsPage() {
     }
   };
 
+  // Handle Project Edit: Open modal with existing project data
+  const handleOpenEditModal = (proj: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditProjectId(proj.id);
+    setEditTitle(proj.name);
+    setEditDesc(proj.description || '');
+    setEditStatus(proj.status || 'ACTIVE');
+    setIsEditModalOpen(true);
+  };
+
+  // Handle Project Edit: Save changes
+  const handleUpdateProject = async () => {
+    if (!editTitle.trim() || !editProjectId) return;
+    setEditSubmitting(true);
+
+    // Optimistic update
+    setProjects(prev => prev.map(p =>
+      p.id === editProjectId
+        ? { ...p, name: editTitle, description: editDesc, status: editStatus }
+        : p
+    ));
+    setIsEditModalOpen(false);
+
+    try {
+      await ProjectService.updateProject(editProjectId, editTitle, editDesc, editStatus);
+    } catch (err) {
+      console.error('Failed to update project:', err);
+    } finally {
+      setEditSubmitting(false);
+      loadProjects();
+    }
+  };
+
   // Handle Project Deletion (Soft delete / Archive)
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -104,16 +147,16 @@ export default function ProjectsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Folder className="h-6 w-6 text-primary" /> Projects Workspace
+            <Folder className="h-6 w-6 text-primary" /> {t('projects.title')}
           </h1>
-          <p className="text-sm text-muted-foreground font-arabic mt-1">المشاريع ومساحات العمل التشاركية للفرق</p>
+          <p className="text-sm text-muted-foreground font-arabic mt-1">{t('projects.desc')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-10 text-xs">
-            <ListFilter className="h-4 w-4 mr-2" /> Filter
+            <ListFilter className="h-4 w-4 mr-2" /> {t('common.filter')}
           </Button>
           <Button variant="primary" size="sm" className="h-10 text-xs cursor-pointer" onClick={() => setIsModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" /> New Project
+            <Plus className="h-4 w-4 mr-2" /> {t('projects.newProjectBtn')}
           </Button>
         </div>
       </div>
@@ -128,8 +171,8 @@ export default function ProjectsPage() {
       ) : projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center select-none border border-dashed border-border rounded-xl">
           <Folder className="h-12 w-12 text-muted-foreground/60 mb-3" />
-          <h3 className="text-sm font-bold">No active projects found</h3>
-          <p className="text-xs text-muted-foreground mt-1">Click the "New Project" button to create your first workflow container.</p>
+          <h3 className="text-sm font-bold">{t('projects.noProjects')}</h3>
+          <p className="text-xs text-muted-foreground mt-1">{t('projects.noProjectsDesc')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -144,7 +187,14 @@ export default function ProjectsPage() {
                     <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase">
                       {proj.status || 'Active'}
                     </span>
-                    <button 
+                    <button
+                      onClick={(e) => handleOpenEditModal(proj, e)}
+                      className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 p-1 rounded transition-all cursor-pointer"
+                      title={t('projects.editBtn')}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={(e) => handleDeleteProject(proj.id, e)}
                       className="text-muted-foreground hover:text-error opacity-0 group-hover:opacity-100 p-1 rounded transition-all cursor-pointer"
                     >
@@ -172,39 +222,39 @@ export default function ProjectsPage() {
           <Card className="p-6 border border-primary/20 bg-primary/5 rounded-xl flex flex-col justify-between space-y-4 h-48 select-none">
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-primary text-[10px] font-bold uppercase tracking-wider">
-                <Sparkles className="h-4 w-4 animate-pulse shrink-0" /> AI Project Coach
+                <Sparkles className="h-4 w-4 animate-pulse shrink-0" /> {t('projects.aiProjectCoach')}
               </div>
-              <h3 className="text-sm font-bold truncate">Adaptive Scheduling Active</h3>
+              <h3 className="text-sm font-bold truncate">{t('projects.schedulingActive')}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                 Cortex AI has examined your active project dependencies and protected focus blocks dynamically.
+                 {t('projects.schedulingDesc')}
               </p>
             </div>
             <Button variant="outline" size="sm" className="w-full h-8 text-[11px] hover:bg-primary hover:text-primary-foreground border-primary/20">
-              Ask for Breakdown steps
+              {t('projects.askBreakdown')}
             </Button>
           </Card>
         </div>
       )}
 
-      {/* 7. Create New Project Modal Dialog Overlay */}
+      {/* Create New Project Modal Dialog Overlay */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-30 flex items-center justify-center p-4 select-none animate-fade-in" onClick={() => setIsModalOpen(false)}>
           <div className="max-w-md w-full border border-border bg-card rounded-xl p-6 shadow-xl space-y-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-foreground">Add New Project | إضافة مشروع جديد</h3>
-            
+            <h3 className="text-base font-bold text-foreground">{t('projects.addProjectTitle')}</h3>
+
             <div className="space-y-4">
-              <Input 
-                label="Project Title"
-                placeholder="Enter project title"
+              <Input
+                label={t('projects.projectTitleLabel')}
+                placeholder={t('projects.projectTitlePlaceholder')}
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 disabled={submitting}
               />
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Description</label>
+                <label className="text-xs font-medium text-foreground">{t('projects.projectDescLabel')}</label>
                 <textarea
-                  placeholder="Project description details..."
+                  placeholder={t('projects.projectDescPlaceholder')}
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   disabled={submitting}
@@ -215,10 +265,63 @@ export default function ProjectsPage() {
 
             <div className="pt-2 border-t border-border flex items-center justify-end gap-3">
               <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)} disabled={submitting}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" size="sm" onClick={handleCreateProject} disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Project'}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.create')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal Dialog Overlay */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-30 flex items-center justify-center p-4 select-none animate-fade-in" onClick={() => setIsEditModalOpen(false)}>
+          <div className="max-w-md w-full border border-border bg-card rounded-xl p-6 shadow-xl space-y-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-foreground">{t('projects.editProjectTitle')}</h3>
+
+            <div className="space-y-4">
+              <Input
+                label={t('projects.projectTitleLabel')}
+                placeholder={t('projects.projectTitlePlaceholder')}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                disabled={editSubmitting}
+              />
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">{t('projects.projectDescLabel')}</label>
+                <textarea
+                  placeholder={t('projects.projectDescPlaceholder')}
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  disabled={editSubmitting}
+                  className="w-full h-20 p-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">{t('common.status')}</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  disabled={editSubmitting}
+                  className="w-full h-9 px-3 border border-border rounded-lg bg-card text-xs font-medium text-foreground outline-none cursor-pointer"
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="PAUSED">Paused</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-border flex items-center justify-end gap-3">
+              <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(false)} disabled={editSubmitting}>
+                {t('common.cancel')}
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleUpdateProject} disabled={editSubmitting}>
+                {editSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('projects.updateBtn')}
               </Button>
             </div>
           </div>

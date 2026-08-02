@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Button } from '../ui/button';
 import { AlertOctagon } from 'lucide-react';
+import { translate } from '@/core/utils/i18n';
 
 interface Props {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      const locale = typeof window !== 'undefined' && localStorage.getItem('language') === 'ar' ? 'ar' : 'en';
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground p-6 select-none">
           <div className="max-w-md w-full border border-border bg-card rounded-xl p-8 shadow-md text-center space-y-6">
@@ -37,9 +39,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-xl font-bold tracking-tight">Oops! Something went wrong</h2>
+              <h2 className="text-xl font-bold tracking-tight">{translate(locale, 'common.errorTitle')}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                The application shell encountered an unexpected error. Don't worry, your work has been saved securely.
+                {translate(locale, 'common.errorDesc')}
               </p>
             </div>
 
@@ -55,7 +57,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 className="w-full"
                 onClick={() => this.setState({ hasError: false, error: null })}
               >
-                Reset and Try Again
+                {translate(locale, 'common.resetTryAgain')}
               </Button>
             </div>
           </div>

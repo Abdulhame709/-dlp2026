@@ -1,10 +1,23 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { SecurityUtils } from '@/core/security/security-utils';
 import { ConfigManager } from '@/core/config/config-manager';
 import { createClient } from '@/core/database/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limit health endpoint to prevent information disclosure abuse
+  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'unknown';
+
+  if (SecurityUtils.isRateLimited(`health-${clientIp}`, 30, 60000)) {
+    return NextResponse.json(
+      { status: 'error', message: 'Rate limit exceeded.' },
+      { status: 429 }
+    );
+  }
+
   const config = ConfigManager.get();
   
   const healthStatus: Record<string, any> = {

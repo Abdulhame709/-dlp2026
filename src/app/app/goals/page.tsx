@@ -5,6 +5,7 @@ import { AIGoalAnalyzer, GoalAnalysis, GeneratedProject, GeneratedTasks, Timelin
 import { TaskService } from '@/features/tasks/services/task-service';
 import { GoalService } from '@/core/services/domain-services';
 import { AuthService } from '@/core/auth/auth-service';
+import { useLocale } from '@/shared/hooks/use-locale';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 
 export default function GoalsPage() {
+  const { t } = useLocale();
   const [userId, setUserId] = React.useState<string>('11111111-1111-1111-1111-111111111111');
   const [goals, setGoals] = React.useState<any[]>([]);
   const [goalsLoading, setGoalsLoading] = React.useState(true);
@@ -154,26 +156,26 @@ export default function GoalsPage() {
       <div className="p-6 border border-border bg-card rounded-xl shadow-sm space-y-4 select-none">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            Product Intelligence Core <Target className="h-5 w-5 text-primary shrink-0 animate-pulse" />
+            {t('goals.title')} <Target className="h-5 w-5 text-primary shrink-0 animate-pulse" />
           </h1>
-          <p className="text-xs text-muted-foreground font-arabic">محرك الذكاء الاصطناعي لتوليد خطط العمل وإعداد المشاريع التلقائية</p>
+          <p className="text-xs text-muted-foreground font-arabic">{t('goals.desc')}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3.5 pt-2">
-          <Input 
-            placeholder="Type your high-level idea or goal... (e.g. Launch SaaS, learn statistics)"
+          <Input
+            placeholder={t('goals.inputPlaceholder')}
             value={goalTitle}
             onChange={(e) => setGoalTitle(e.target.value)}
             className="flex-1 h-11 text-sm font-semibold bg-muted/35"
             disabled={isAnalyzing}
           />
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             className="h-11 px-6 text-sm shrink-0 cursor-pointer"
             onClick={handleRunProductIntelligence}
             isLoading={isAnalyzing}
           >
-            <Sparkles className="h-4.5 w-4.5 mr-2 animate-bounce shrink-0" /> Transform to Roadmap
+            <Sparkles className="h-4.5 w-4.5 mr-2 animate-bounce shrink-0" /> {t('goals.transformBtn')}
           </Button>
         </div>
 
@@ -188,9 +190,9 @@ export default function GoalsPage() {
       <div className="space-y-4">
         <div className="flex flex-col select-none">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" /> Active Objectives & Goals
+            <Target className="h-5 w-5 text-primary" /> {t('goals.activeObjectives')}
           </h2>
-          <p className="text-[10px] text-muted-foreground font-arabic">الأهداف الاستراتيجية المسجلة ومؤشرات التقدم</p>
+          <p className="text-[10px] text-muted-foreground font-arabic">{t('goals.activeObjectives')}</p>
         </div>
 
         {goalsLoading ? (
@@ -201,7 +203,7 @@ export default function GoalsPage() {
         ) : goals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center select-none border border-dashed border-border rounded-xl">
             <Target className="h-8 w-8 text-muted-foreground/60 mb-2" />
-            <p className="text-xs text-muted-foreground">No active goals found. Use the analyzer above to seed your first goal.</p>
+            <p className="text-xs text-muted-foreground">{t('goals.noGoals')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,20 +263,20 @@ export default function GoalsPage() {
               <Card className="md:col-span-2 p-5 space-y-4">
                 <div className="border-b border-border pb-3 flex items-center justify-between select-none">
                   <span className="text-sm font-bold flex items-center gap-1.5">
-                    <Target className="h-5 w-5 text-primary" /> Goal Objective & Execution Strategy
+                    <Target className="h-5 w-5 text-primary" /> {t('goals.goalObjective')}
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary uppercase select-none">
-                    Difficulty: {analysis.difficulty}/5
+                    {t('goals.difficulty', { diff: analysis.difficulty })}
                   </span>
                 </div>
                 
                 <div className="space-y-3 leading-relaxed">
                   <div className="text-xs font-semibold">
-                    <span className="text-primary block font-bold text-xs uppercase mb-1">Calculated Objective:</span>
+                    <span className="text-primary block font-bold text-xs uppercase mb-1">{t('goals.calculatedObjective')}</span>
                     <p className="text-foreground p-3.5 bg-muted/40 rounded-xl border border-border">{analysis.objective}</p>
                   </div>
                   <div className="text-xs font-semibold">
-                    <span className="text-primary block font-bold text-xs uppercase mb-1">Recommended Execution Strategy:</span>
+                    <span className="text-primary block font-bold text-xs uppercase mb-1">{t('goals.recommendedStrategy')}</span>
                     <p className="text-muted-foreground leading-relaxed p-3.5 bg-muted/25 rounded-xl">{analysis.executionStrategy}</p>
                   </div>
                 </div>
@@ -284,7 +286,7 @@ export default function GoalsPage() {
               <Card className="p-5 space-y-4">
                 <div className="border-b border-border pb-3 select-none">
                   <span className="text-sm font-bold flex items-center gap-1.5 text-error">
-                    <AlertTriangle className="h-5 w-5" /> SRE Risk Audit & Mitigation
+                    <AlertTriangle className="h-5 w-5" /> {t('goals.riskAudit')}
                   </span>
                 </div>
 
@@ -309,8 +311,8 @@ export default function GoalsPage() {
           {projectsData && (
             <div className="space-y-4">
               <div className="flex flex-col select-none">
-                <h2 className="text-lg font-bold tracking-tight">SaaS Projects Deconstructed</h2>
-                <p className="text-[10px] text-muted-foreground font-arabic">مجموعات العمل والمعالم البارزة المولدة تلقائياً</p>
+                <h2 className="text-lg font-bold tracking-tight">{t('goals.projectsDeconstructed')}</h2>
+                <p className="text-[10px] text-muted-foreground font-arabic">{t('goals.projectsDeconstructedDesc')}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 select-none">
@@ -352,8 +354,8 @@ export default function GoalsPage() {
               {/* Task Breakdown list (2 cols) */}
               <div className="lg:col-span-2 space-y-4 select-none">
                 <div className="flex flex-col">
-                  <h2 className="text-sm font-bold tracking-tight uppercase text-muted-foreground">Milestone Tasks Breakdown</h2>
-                  <p className="text-[10px] text-muted-foreground">المهام التنفيذية المقترحة للميلستون</p>
+                  <h2 className="text-sm font-bold tracking-tight uppercase text-muted-foreground">{t('goals.milestoneBreakdown')}</h2>
+                  <p className="text-[10px] text-muted-foreground">{t('goals.milestoneBreakdownDesc')}</p>
                 </div>
 
                 <div className="space-y-3">
@@ -383,8 +385,8 @@ export default function GoalsPage() {
               {priorityData && (
                 <div className="space-y-4 select-none">
                   <div className="flex flex-col">
-                    <h2 className="text-sm font-bold tracking-tight uppercase text-muted-foreground">AI Priority Engine</h2>
-                    <p className="text-[10px] text-muted-foreground">محرك حساب الأهمية والوزن السلوكي</p>
+                    <h2 className="text-sm font-bold tracking-tight uppercase text-muted-foreground">{t('goals.priorityEngine')}</h2>
+                    <p className="text-[10px] text-muted-foreground">{t('goals.priorityEngineDesc')}</p>
                   </div>
 
                   <Card className="p-5 space-y-4">
@@ -397,11 +399,11 @@ export default function GoalsPage() {
 
                     <div className="space-y-3 leading-relaxed">
                       <div className="text-xs font-semibold">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Calculated Reason</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('goals.calculatedReason')}</span>
                         <p className="text-foreground p-3.5 bg-muted/40 rounded-xl border border-border leading-normal">{priorityData.reason}</p>
                       </div>
                       <div className="flex justify-between text-[11px] font-bold text-muted-foreground">
-                        <span>Confidence Index:</span>
+                        <span>{t('goals.confidenceIndex')}</span>
                         <span className="text-secondary">{priorityData.confidence}%</span>
                       </div>
                     </div>
@@ -416,8 +418,8 @@ export default function GoalsPage() {
           {timelineData && (
             <div className="space-y-4 select-none">
               <div className="flex flex-col">
-                <h2 className="text-lg font-bold tracking-tight">Interactive Timeline Grid</h2>
-                <p className="text-[10px] text-muted-foreground font-arabic">خطة التوزيع وجدولة التواريخ والأسابيع</p>
+                <h2 className="text-lg font-bold tracking-tight">{t('goals.timelineGrid')}</h2>
+                <p className="text-[10px] text-muted-foreground font-arabic">{t('goals.milestoneBreakdownDesc')}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 
 export interface WidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
-  arabicTitle?: string;
   description?: string;
   icon?: React.ComponentType<any>;
   isLoading?: boolean;
@@ -16,7 +15,6 @@ export interface WidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Widget({
   className,
   title,
-  arabicTitle,
   description,
   icon: Icon,
   isLoading,
@@ -33,11 +31,6 @@ export function Widget({
           <CardTitle className="flex items-center text-base font-bold tracking-tight">
             {Icon && <Icon className="h-4.5 w-4.5 text-primary mr-2 shrink-0" />}
             {title}
-            {arabicTitle && (
-              <span className="text-[10px] font-arabic text-muted-foreground ml-2">
-                | {arabicTitle}
-              </span>
-            )}
           </CardTitle>
           {description && <CardDescription className="text-xs">{description}</CardDescription>}
         </div>

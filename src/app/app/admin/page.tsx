@@ -5,40 +5,94 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Building, Users, BrainCircuit, Activity, ShieldAlert, HeartPulse } from 'lucide-react';
+import { createClient } from '@/core/database/connection';
+import { useLocale } from '@/shared/hooks/use-locale';
+
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  actor: string;
+  details: string;
+  time: string;
+}
 
 export default function AdminPage() {
+  const { t } = useLocale();
   const [isLoading, setIsLoading] = React.useState(true);
+  const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
+  const [stats, setStats] = React.useState({
+    activeUsers: 0,
+    organizations: 0,
+    aiRequests: 0,
+  });
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
+    async function loadAdminData() {
+      try {
+        const supabase = await createClient();
+
+        // Fetch real audit logs from database
+        const { data: logs } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (logs && logs.length > 0) {
+          setAuditLogs(logs.map((log: any) => ({
+            id: log.id,
+            action: log.action || 'Unknown action',
+            actor: log.actor_email || log.user_id || 'Unknown',
+            details: log.details || '',
+            time: new Date(log.created_at).toLocaleString(),
+          })));
+        }
+
+        // Fetch real stats from database
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: orgCount } = await supabase
+          .from('organizations')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: activityCount } = await supabase
+          .from('activity_logs')
+          .select('*', { count: 'exact', head: true });
+
+        setStats({
+          activeUsers: userCount || 0,
+          organizations: orgCount || 0,
+          aiRequests: activityCount || 0,
+        });
+      } catch (err) {
+        console.error('Failed to load admin data:', err);
+        // Fallback to empty state — no hardcoded data
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadAdminData();
   }, []);
 
-  // Seeded Admin statistics
-  const stats = [
-    { name: 'Active Users', count: '14,892', change: '+12.5%', icon: Users, color: 'text-primary' },
-    { name: 'Organizations', count: '1,248', change: '+8.2%', icon: Building, color: 'text-accent' },
-    { name: 'AI Requests', count: '452,903', change: '+35.6%', icon: BrainCircuit, color: 'text-secondary' },
-    { name: 'System Health', count: '99.98%', change: 'Excellent', icon: HeartPulse, color: 'text-secondary' },
-  ];
-
-  const recentAudits = [
-    { id: '1', action: 'User changed password', actor: 'demo@cortexai.local', time: '10 mins ago' },
-    { id: '2', action: 'Task deleted (soft-delete)', actor: 'founder@cortexai.com', time: '45 mins ago' },
-    { id: '3', action: 'Subscription upgraded to PRO', actor: 'user-b-2222', time: '2 hours ago' },
-    { id: '4', action: 'Permission role updated (MEMBER ➔ ADMIN)', actor: 'owner-org-1', time: '5 hours ago' },
+  const displayStats = [
+    { name: t('admin.activeUsers'), count: stats.activeUsers.toLocaleString(), change: t('admin.live'), icon: Users, color: 'text-primary' },
+    { name: t('admin.organizations'), count: stats.organizations.toLocaleString(), change: t('admin.live'), icon: Building, color: 'text-accent' },
+    { name: t('admin.aiRequests'), count: stats.aiRequests.toLocaleString(), change: t('admin.live'), icon: BrainCircuit, color: 'text-secondary' },
+    { name: t('admin.systemHealth'), count: t('admin.activeStatus'), change: t('admin.operational'), icon: HeartPulse, color: 'text-secondary' },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in select-none">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Admin Console</h1>
-        <p className="text-xs text-muted-foreground font-arabic">لوحة التحكم والمراقبة المركزية للمشرفين</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('admin.title')}</h1>
+        <p className="text-xs text-muted-foreground font-arabic">{t('admin.desc')}</p>
       </div>
 
       {/* Grid statistics metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => {
+        {displayStats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <Card key={idx} className="p-5 flex flex-col justify-between">
@@ -53,7 +107,7 @@ export default function AdminPage() {
                   <div className="space-y-1">
                     <span className="text-2xl font-black text-foreground">{stat.count}</span>
                     <p className="text-[10px] text-secondary font-bold flex items-center">
-                      <Activity className="h-3 w-3 mr-1" /> {stat.change} this month
+                      <Activity className="h-3 w-3 mr-1" /> {stat.change}
                     </p>
                   </div>
                 )}
@@ -68,7 +122,7 @@ export default function AdminPage() {
         <Card className="lg:col-span-2 p-5 space-y-4">
           <CardHeader className="p-0 pb-3 border-b border-border flex flex-row items-center justify-between">
             <span className="text-sm font-bold flex items-center gap-1.5">
-              <ShieldAlert className="h-4.5 w-4.5 text-error" /> SRE Security Audit Log
+              <ShieldAlert className="h-4.5 w-4.5 text-error" /> {t('admin.auditLog')}
             </span>
           </CardHeader>
           <CardContent className="p-0 divide-y divide-border">
@@ -77,8 +131,12 @@ export default function AdminPage() {
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-8 w-full" />
               </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                {t('admin.noLogs')}
+              </div>
             ) : (
-              recentAudits.map(audit => (
+              auditLogs.map(audit => (
                 <div key={audit.id} className="py-3 flex justify-between text-xs font-semibold">
                   <div className="space-y-1">
                     <p className="text-foreground">{audit.action}</p>
@@ -94,20 +152,20 @@ export default function AdminPage() {
         {/* AI Resource & Token Monitor */}
         <Card className="p-5 space-y-4">
           <CardHeader className="p-0 pb-3 border-b border-border">
-            <span className="text-sm font-bold">AI Quota & Token Ingestion</span>
+            <span className="text-sm font-bold">{t('admin.aiQuota')}</span>
           </CardHeader>
           <CardContent className="p-0 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold text-muted-foreground select-none">
-                <span>Monthly Token Budget</span>
-                <span>45% Used</span>
+                <span>{t('admin.monthlyBudget')}</span>
+                <span>0% {t('admin.used')}</span>
               </div>
               <div className="h-2 bg-muted/40 rounded-full overflow-hidden border border-border">
-                <div className="h-full bg-primary rounded-full" style={{ width: '45%' }} />
+                <div className="h-full bg-primary rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground leading-normal">
-              Unified AI Gateway is automatically distributing requests between OpenAI and lightweight fallback models to optimize budget costs.
+              {t('admin.aiGatewayDesc')}
             </p>
           </CardContent>
         </Card>

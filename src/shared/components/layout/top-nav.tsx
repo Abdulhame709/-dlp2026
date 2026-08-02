@@ -1,21 +1,28 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/shared/hooks/use-theme';
 import { useLayoutStore } from '@/shared/stores/layout-store';
 import { AuthService } from '@/core/auth/auth-service';
 import { createClient } from '@/core/database/connection';
-import { Sun, Moon, Bell, Search, Building, Languages, Loader2 } from 'lucide-react';
+import { Sun, Moon, Bell, Search, Building, Languages, Loader2, LogOut, User } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useLocale } from '@/shared/hooks/use-locale';
 
 export function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { toggleTheme, theme } = useTheme();
   const { activeWorkspaceId, setActiveWorkspaceId } = useLayoutStore();
+  const { t } = useLocale();
 
   const [lang, setLang] = React.useState('en');
   const [updatingLang, setUpdatingLang] = React.useState(false);
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [userName, setUserName] = React.useState('');
+  const [userEmail, setUserEmail] = React.useState('');
 
   // Load language preference on mount
   React.useEffect(() => {
@@ -23,6 +30,33 @@ export function TopNav() {
       setLang(localStorage.getItem('language') || 'en');
     }
   }, []);
+
+  // Load user profile data on mount
+  React.useEffect(() => {
+    async function loadUserProfile() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setUserName(user.fullName || '');
+          setUserEmail(user.email || '');
+        }
+      } catch {
+        // User not logged in — ignore
+      }
+    }
+    loadUserProfile();
+  }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await AuthService.logout();
+    } catch {
+      // Force redirect even if logout fails
+    }
+    setShowProfileMenu(false);
+    router.push('/login');
+  };
 
   // Handle Dynamic Language Switch (with Database Sync & full RTL/LTR document flip)
   const handleLanguageSwitch = async () => {
@@ -32,6 +66,7 @@ export function TopNav() {
     try {
       // 1. Persist locally
       localStorage.setItem('language', nextLang);
+      document.cookie = `language=${nextLang};path=/;max-age=31536000;samesite=lax`;
       setLang(nextLang);
 
       // 2. Apply direction and locale to HTML root node
@@ -63,13 +98,31 @@ export function TopNav() {
   const breadcrumb = pathSegments.length > 1 ? pathSegments[1] : 'Dashboard';
   const capitalizedBreadcrumb = breadcrumb.charAt(0).toUpperCase() + breadcrumb.slice(1);
 
-  // Mock Workspace data list
-  const workspaces = [
-    { id: '22222222-2222-2222-2222-222222222222', name: 'Cortex Founders Inc.' },
-    { id: 'personal-org-uuid-mock-1234', name: 'Personal Workspace' },
-  ];
+  // Dynamic workspace list loaded from OrganizationService
+  const [workspaces, setWorkspaces] = React.useState<{ id: string; name: string }[]>([]);
 
-  const activeWorkspaceName = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Default Space';
+  React.useEffect(() => {
+    async function loadWorkspaces() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          const { OrganizationService } = await import('@/features/organizations/organization-service');
+          const orgs = await OrganizationService.getUserOrganizations(user.id);
+          const mapped = orgs.map((org: any) => ({ id: org.id, name: org.name }));
+          setWorkspaces(mapped);
+          // Set first org as active if none selected
+          if (mapped.length > 0 && !activeWorkspaceId) {
+            setActiveWorkspaceId(mapped[0].id);
+          }
+        }
+      } catch {
+        // Fallback to empty list — workspace switcher will show empty state
+      }
+    }
+    loadWorkspaces();
+  }, [activeWorkspaceId, setActiveWorkspaceId]);
+
+  const activeWorkspaceName = workspaces.find(w => w.id === activeWorkspaceId)?.name || t('organizations.title');
 
   return (
     <header className="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b border-border bg-card px-6 text-foreground shadow-sm">
@@ -87,7 +140,7 @@ export function TopNav() {
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search projects, tasks, goals... (Press ⌘K)"
+          placeholder={t('common.search')}
           className="w-full h-9 pl-9 pr-3 rounded-lg border border-border bg-muted/50 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
           disabled
         />
@@ -149,10 +202,44 @@ export function TopNav() {
         </div>
 
         {/* User Profile Menu Dropdown */}
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center select-none">
-            A
-          </div>
+        <div className="relative flex items-center space-x-2">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center space-x-2 cursor-pointer"
+          >
+            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center select-none">
+              {userName ? userName.charAt(0).toUpperCase() : 'A'}
+            </div>
+          </button>
+
+          {/* Profile Dropdown */}
+          {showProfileMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+              <div className="absolute right-0 top-12 z-50 w-56 bg-card border border-border rounded-xl shadow-lg py-2 select-none animate-fade-in">
+                {/* User info */}
+                <div className="px-4 py-3 border-b border-border">
+                  <p className="text-sm font-bold text-foreground truncate">{userName || 'Cortex User'}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{userEmail}</p>
+                </div>
+                {/* Menu items */}
+                <Link
+                  href="/app/settings"
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  <User className="h-4 w-4 text-muted-foreground" /> {t('settings.title')}
+                </Link>
+                <div className="border-t border-border my-1" />
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-error hover:bg-error/10 transition-colors cursor-pointer w-full text-left"
+                >
+                  <LogOut className="h-4 w-4" /> {t('common.signOut')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

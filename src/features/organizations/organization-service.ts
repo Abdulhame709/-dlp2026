@@ -1,15 +1,43 @@
+import { IOrganizationRepository } from './repositories/organization-repository-interface';
+import { OrganizationEntity } from './repositories/supabase-organization-repository';
+import { DependencyInjector } from '@/core/config/dependency-injector';
 import { createClient } from '@/core/database/connection';
 import { RoleGuard } from '@/core/auth/role-guard';
 import { Logger } from '@/core/logging/logger';
 import { EventBus } from '@/core/utils/event-bus';
 
 export class OrganizationService {
+  // Dynamic getter handles dependency injection (DI) based on environment
+  private static get repository(): IOrganizationRepository {
+    return DependencyInjector.getOrganizationRepository();
+  }
+
+  /**
+   * Retrieves all organizations the user belongs to
+   */
+  static async getUserOrganizations(userId: string): Promise<OrganizationEntity[]> {
+    return this.repository.getUserOrganizations(userId);
+  }
+
+  /**
+   * Retrieves a single organization by ID
+   */
+  static async getOrganization(organizationId: string): Promise<OrganizationEntity | null> {
+    return this.repository.getOrganization(organizationId);
+  }
+
+  /**
+   * Updates an organization's name and/or logo
+   */
+  static async updateOrganization(organizationId: string, name: string, logoUrl?: string): Promise<OrganizationEntity | null> {
+    return this.repository.updateOrganization(organizationId, name, logoUrl);
+  }
+
   /**
    * Retrieves all authorized organization members
    */
   static async getMembers(userId: string, organizationId: string): Promise<any[]> {
     try {
-      // Security: caller must be a member of the organization
       const supabase = await createClient();
       const { data, error } = await supabase
         .from('organization_members')
@@ -21,19 +49,12 @@ export class OrganizationService {
         .eq('organization_id', organizationId);
 
       if (error) {
-        // Return a mock fallback if PostgreSQL connection is absent in sandbox
-        return [
-          { id: 'member-1', role: 'OWNER', user: { id: userId, full_name: 'Abdul Demo User' } },
-          { id: 'member-2', role: 'MEMBER', user: { id: 'user-b-2222', full_name: 'Sara Coworker' } },
-        ];
+        return [];
       }
 
       return data || [];
     } catch {
-      return [
-        { id: 'member-1', role: 'OWNER', user: { id: userId, full_name: 'Abdul Demo User' } },
-        { id: 'member-2', role: 'MEMBER', user: { id: 'user-b-2222', full_name: 'Sara Coworker' } },
-      ];
+      return [];
     }
   }
 
@@ -49,6 +70,21 @@ export class OrganizationService {
     try {
       // 1. Enforce Role check: sender must be OWNER or ADMIN
       await RoleGuard.enforce(organizationId, ['OWNER', 'ADMIN']);
+
+      // 2. Persist the invitation to the database
+      const supabase = await createClient();
+      const { error } = await supabase
+        .from('organization_members')
+        .insert({
+          organization_id: organizationId,
+          user_id: email, // Using email as placeholder until user accepts invite
+          role,
+          created_by: senderId,
+        });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
 
       await Logger.security('Member Invited', { senderId, organizationId, email, role });
       
@@ -76,6 +112,18 @@ export class OrganizationService {
     try {
       await RoleGuard.enforce(organizationId, ['OWNER', 'ADMIN']);
 
+      // Persist the removal to the database
+      const supabase = await createClient();
+      const { error } = await supabase
+        .from('organization_members')
+        .delete()
+        .eq('organization_id', organizationId)
+        .eq('user_id', targetUserId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
       await Logger.security('Member Removed', { senderId, organizationId, targetUserId });
       return { success: true };
     } catch (err: any) {
@@ -94,6 +142,18 @@ export class OrganizationService {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await RoleGuard.enforce(organizationId, ['OWNER']);
+
+      // Persist the role change to the database
+      const supabase = await createClient();
+      const { error } = await supabase
+        .from('organization_members')
+        .update({ role: newRole })
+        .eq('organization_id', organizationId)
+        .eq('user_id', targetUserId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
 
       await Logger.security('Member Role Updated', { senderId, organizationId, targetUserId, newRole });
       return { success: true };

@@ -130,12 +130,14 @@ export class AIAssistantService {
 
   /**
    * 4. AI Productivity Coach: Behavioral advice based on telemetry
+   *    Accepts optional userMessage to include the user's actual prompt in the context.
    */
-  static async getCoachingAdvice(userId: string) {
+  static async getCoachingAdvice(userId: string, userMessage?: string) {
     const contexts = await AIContextManager.compileFullContext(userId);
 
     const rendered = PromptManager.render(productivityCoachPrompt, {
       userProfileContext: contexts.userProfile,
+      userMessage: userMessage || '',
     });
 
     const response = await AIService.generateStructuredOutput(

@@ -4,11 +4,17 @@ import * as React from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { AuthService } from '@/core/auth/auth-service';
-import { CreditCard, Check, Sparkles, Zap, Shield, Key } from 'lucide-react';
+import { SubscriptionService } from '@/features/billing/subscription-service';
+import { UserSubscription } from '@/features/billing/billing-types';
+import { useLocale } from '@/shared/hooks/use-locale';
+import { CreditCard, Check, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function BillingPage() {
-  const [userId, setUserId] = React.useState('11111111-1111-1111-1111-111111111111');
-  const [currentPlan, setCurrentPlan] = React.useState('FREE');
+  const { t } = useLocale();
+  const [userId, setUserId] = React.useState<string | null>(null);
+  const [subscription, setSubscription] = React.useState<UserSubscription | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -16,13 +22,33 @@ export default function BillingPage() {
         const user = await AuthService.getCurrentUser();
         if (user) {
           setUserId(user.id);
+          // Load real subscription from service
+          const sub = await SubscriptionService.getSubscription(user.id);
+          setSubscription(sub);
         }
       } catch (err) {
         console.error('Failed to resolve current user session inside billing page:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadUser();
   }, []);
+
+  const currentPlan = subscription?.planName || 'FREE';
+
+  const handleUpgrade = async (tier: 'FREE' | 'PRO' | 'ENTERPRISE') => {
+    if (!userId) return;
+    try {
+      const checkoutUrl = await SubscriptionService.upgradePlan(userId, tier);
+      // In production, redirect to Stripe checkout
+      // For now, refresh subscription state
+      const updatedSub = await SubscriptionService.getSubscription(userId);
+      setSubscription(updatedSub);
+    } catch (err) {
+      console.error('Failed to upgrade plan:', err);
+    }
+  };
 
   const tiers = [
     { name: 'FREE Standard', price: '$0', desc: 'Optimal for single users starting with in-memory task planning.', features: ['Up to 50 active tasks', 'Standard AI Prioritizer', 'Email Verification', 'Arabic and English layouts'] },
@@ -34,9 +60,9 @@ export default function BillingPage() {
       {/* Header panel */}
       <div className="border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <CreditCard className="h-6 w-6 text-primary" /> Subscriptions & Billing
+          <CreditCard className="h-6 w-6 text-primary" /> {t('billing.title')}
         </h1>
-        <p className="text-sm text-muted-foreground font-arabic mt-1">خطط الاشتراكات وبوابات الدفع وإدارة الفواتير</p>
+        <p className="text-sm text-muted-foreground font-arabic mt-1">{t('billing.desc')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -56,11 +82,11 @@ export default function BillingPage() {
                     <h3 className="text-base font-bold text-foreground">{tier.name}</h3>
                     <p className="text-xs text-muted-foreground leading-normal">{tier.desc}</p>
                   </div>
-                  <span className="text-2xl font-black text-primary shrink-0">{tier.price} <span className="text-xs font-semibold text-muted-foreground">/mo</span></span>
+                  <span className="text-2xl font-black text-primary shrink-0">{tier.price} <span className="text-xs font-semibold text-muted-foreground">{t('billing.perMonth')}</span></span>
                 </div>
 
                 <div className="space-y-2.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Features included</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">{t('billing.featuresIncluded')}</span>
                   {tier.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center space-x-2 text-xs text-muted-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0" />
@@ -73,7 +99,7 @@ export default function BillingPage() {
               <div className="pt-4 border-t border-border/45">
                 {isActive ? (
                   <span className="text-xs font-bold text-primary flex items-center justify-center gap-1 bg-primary/10 h-10 w-full rounded-lg">
-                    <Check className="h-4 w-4" /> Your Active Plan
+                    <Check className="h-4 w-4" /> {t('billing.activePlan')}
                   </span>
                 ) : (
                   <Button 
@@ -81,13 +107,13 @@ export default function BillingPage() {
                     className="w-full h-10 text-xs cursor-pointer" 
                     onClick={() => {
                       if (tier.name.includes('PRO')) {
-                        setCurrentPlan('PRO');
+                        handleUpgrade('PRO');
                       } else {
-                        setCurrentPlan('FREE');
+                        handleUpgrade('FREE');
                       }
                     }}
                   >
-                    Upgrade to {tier.name.split(' ')[0]} Plan
+                    {t('billing.upgradeTo', { plan: tier.name.split(' ')[0] })}
                   </Button>
                 )}
               </div>
@@ -100,15 +126,12 @@ export default function BillingPage() {
       <Card className="p-4 border border-primary/20 bg-primary/5 rounded-xl flex items-start space-x-3 select-none">
         <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0 animate-pulse" />
         <div className="space-y-1">
-          <h4 className="text-xs font-bold text-primary uppercase">Secure Checkout Processors Active</h4>
+          <h4 className="text-xs font-bold text-primary uppercase">{t('billing.checkoutActive')}</h4>
           <p className="text-[11px] text-muted-foreground leading-normal">
-             Payment gateways are powered by Stripe. No credit card details are ever stored or processed directly inside our database, maintaining 100% PCI-DSS security compliance.
+             {t('billing.checkoutDesc')}
           </p>
         </div>
       </Card>
     </div>
   );
 }
-
-// Inline Tailwind cn import helper to satisfy compilation
-import { cn } from '@/lib/utils';

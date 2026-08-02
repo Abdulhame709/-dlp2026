@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/shared/stores/layout-store';
 import { Sidebar } from '@/shared/components/layout/sidebar';
 import { TopNav } from '@/shared/components/layout/top-nav';
 import { ErrorBoundary } from '@/shared/components/layout/error-boundary';
+import { AnalyticsService } from '@/features/analytics/analytics-service';
 import { cn } from '@/lib/utils';
 
 export default function AppLayout({
@@ -15,6 +16,11 @@ export default function AppLayout({
   const { isSidebarCollapsed } = useLayoutStore();
   const [lang, setLang] = React.useState<string>('en');
   const [dir, setDir] = React.useState<'ltr' | 'rtl'>('ltr');
+
+  // Initialize Analytics pipeline once on mount (registers EventBus subscribers)
+  React.useEffect(() => {
+    AnalyticsService.initialize();
+  }, []);
 
   // Load language preference and apply RTL/LTR directions dynamically on mount
   React.useEffect(() => {

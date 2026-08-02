@@ -1,7 +1,8 @@
+import { IBillingRepository } from './billing-repository-interface';
 import { SubscriptionTier, UserSubscription } from './billing-types';
 import { createClient } from '@/core/database/connection';
 
-export class SupabaseBillingRepository {
+export class SupabaseBillingRepository implements IBillingRepository {
   private mapRowToEntity(row: any): UserSubscription {
     return {
       id: row.id,
@@ -57,4 +58,3 @@ export class SupabaseBillingRepository {
     return this.mapRowToEntity(data);
   }
 }
-export type { SubscriptionTier, UserSubscription };
